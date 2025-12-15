@@ -1,28 +1,33 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-#include <QQuickStyle> // <--- ADD THIS
+#include <QQuickStyle> // Essential for Material/Universal styles
 #include "src/DatabaseManager.h"
 #include "src/TimerEngine.h"
 
 int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
+
+    // Organization details for QSettings/Path storage
     app.setOrganizationName("Chronometris");
     app.setOrganizationDomain("chronometris.com");
 
-    // FIX WARNINGS: Force Material or Basic style to allow customization
-    QQuickStyle::setStyle("Basic");
+    // FORCE MATERIAL STYLE (Cleanest look for this app)
+    QQuickStyle::setStyle("Material");
 
     // Initialize Database
     DatabaseManager::instance().init();
 
+    // Create the Timer Engine
     TimerEngine timerEngine;
 
     QQmlApplicationEngine engine;
+
+    // EXPOSE ENGINE TO QML
     engine.rootContext()->setContextProperty("engine", &timerEngine);
 
-    const QUrl url(QStringLiteral("qrc:/Chronometris/Main.qml"));
+    const QUrl url(u"qrc:/Chronometris/Main.qml"_qs);
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
                      &app, [url](QObject *obj, const QUrl &objUrl) {
                          if (!obj && url == objUrl)

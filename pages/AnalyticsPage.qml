@@ -22,23 +22,48 @@ Flickable {
             Text { text: "Total Focus: 4h 20m"; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
         }
 
-        // SCROLLING HEATMAP (Fixed Labels)
+        // SCROLLING HEATMAP
         ColumnLayout {
             Layout.fillWidth: true; spacing: 5
             Text { text: "Activity History"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
             Item {
                 Layout.fillWidth: true; Layout.preferredHeight: 160
+
+                // Centered Container with max width for desktop
                 Item {
-                    anchors.fill: parent; anchors.margins: 25; clip: true
+                    width: Math.min(parent.width, 400)
+                    height: parent.height
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    clip: true // Clean edges
+
                     ListView {
-                        anchors.fill: parent; orientation: ListView.Horizontal; layoutDirection: Qt.RightToLeft; spacing: 4; model: 52
+                        anchors.fill: parent
+                        anchors.leftMargin: 10; anchors.rightMargin: 10
+                        orientation: ListView.Horizontal; layoutDirection: Qt.RightToLeft
+                        spacing: 4
+                        model: 52
+
                         delegate: Column {
                             spacing: 4
-                            Text { text: index % 4 === 0 ? "JAN" : ""; font.pixelSize: 9; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
+                            // Fixed Label Container
+                            Item {
+                                width: 14; height: 15
+                                Text {
+                                    text: index % 4 === 0 ? "JAN" : ""
+                                    font.pixelSize: 9; color: theme.textSecondary
+                                    anchors.centerIn: parent
+                                }
+                            }
+                            // Grid
                             Repeater {
                                 model: 7
-                                Rectangle { width: 14; height: 14; radius: 2; color: accentColor; opacity: 0.2 + (Math.random() * 0.8) }
+                                Rectangle {
+                                    width: 14; height: 14; radius: 2
+                                    property int intensity: Math.floor(Math.random() * 5)
+                                    color: accentColor
+                                    opacity: intensity===0?0.1:(intensity*0.25)
+                                }
                             }
                         }
                     }

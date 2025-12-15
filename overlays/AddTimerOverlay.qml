@@ -15,48 +15,58 @@ Popup {
     property var theme
     property color accentColor
 
-    // Data Props
+    // State
     property string mode: ""
     property bool isScheduled: false
     property string preset: "standard"
+    property int selectedPresetIndex: 0
     property string selectedRingtone: ""
-    property string repeatMode: "daily"
-    property int selectedPresetIndex: -1
-    property var selectedDays: []
-    property bool isEditMode: false // Track if we are editing
 
-    // --- EDIT FUNCTIONALITY ---
-    function openForEdit(data) {
-        isEditMode = true;
-        tName.text = data.name || "";
-        tDesc.text = data.desc || "";
-        // Logic to parse existing timer data would go here
-        // For now, we just open the overlay with name filled
-        mode = "custom"; // Default to custom view for editing
-        open();
+    // Schedule Props
+    property bool isRepeat: false // MASTER CHECKBOX
+    property string repeatMode: "daily"
+    property var selectedDays: []
+    property string scheduleRingtone: ""
+
+    // Custom Duration Logic
+    property string activeCycleType: "work" // work, break, long
+    // Store durations in seconds
+    property var durationMap: ({ "work": 1500, "break": 300, "long": 900 })
+
+    // Helper to update map when picker changes
+    function updateDurationFromPicker() {
+        var secs = (customPicker.hours * 3600) + (customPicker.minutes * 60) + customPicker.seconds
+        var map = durationMap // Copy ref
+        map[activeCycleType] = secs
+        durationMap = map // Trigger update
     }
 
-    function reset() {
-        isEditMode = false;
-        tName.text = "";
-        tDesc.text = "";
-        mode = "";
+    // Helper to load picker when button clicked
+    function loadPickerFromMap(type) {
+        activeCycleType = type
+        var secs = durationMap[type]
+        customPicker.hours = Math.floor(secs / 3600)
+        customPicker.minutes = Math.floor((secs % 3600) / 60)
+        customPicker.seconds = secs % 60
     }
 
     FileDialog {
         id: fileDialog; title: "Select Ringtone"; nameFilters: ["Audio files (*.mp3 *.wav *.ogg)"]
-        onAccepted: { selectedRingtone = fileDialog.selectedFile; }
+        // We use a temp property to know which button triggered it
+        property int target: 0 // 0=Main, 1=Schedule
+        onAccepted: {
+            if (target === 0) selectedRingtone = selectedFile;
+            else scheduleRingtone = selectedFile;
+        }
     }
 
-    // Day Toggle Logic
+    // Day Toggle
     function toggleDay(index) {
         var i = selectedDays.indexOf(index);
         if (i !== -1) selectedDays.splice(i, 1);
         else selectedDays.push(index);
-        daysRepeater.model = 7;
-        daysRepeater.model = ["M","T","W","T","F","S","S"];
+        daysRepeater.model = 7; daysRepeater.model = ["M","T","W","T","F","S","S"];
     }
-
     function isDaySelected(index) { return selectedDays.indexOf(index) !== -1; }
 
     Rectangle {
@@ -69,11 +79,7 @@ Popup {
                 id: contentCol
                 width: parent.width; spacing: 12
 
-                Text {
-                    Layout.alignment: Qt.AlignHCenter;
-                    text: isEditMode ? "EDIT TIMER" : "ADD TIMER"
-                    font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white"
-                }
+                Text { Layout.alignment: Qt.AlignHCenter; text: "ADD TIMER"; font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white" }
                 Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
                 // Mode Toggle
@@ -85,7 +91,7 @@ Popup {
                     }
                     Rectangle { width: 100; height: 35; radius: 5; color: mode==="custom"?"#E9E9E9":"transparent"; border.color: "white"
                         Text { anchors.centerIn: parent; text: "Custom"; font.bold: true; color: mode==="custom"?accentColor:"white" }
-                        MouseArea { anchors.fill: parent; onClicked: mode="custom" }
+                        MouseArea { anchors.fill: parent; onClicked: { mode="custom"; loadPickerFromMap("work"); } }
                     }
                 }
 
@@ -93,29 +99,16 @@ Popup {
                 ColumnLayout {
                     visible: mode !== ""
                     Layout.fillWidth: true; spacing: 8
+                    TextField { id: tName; Layout.fillWidth: true; placeholderText: "Timer Name"; selectByMouse: true; color: "black"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
+                    TextField { id: tDesc; Layout.fillWidth: true; placeholderText: "Description"; selectByMouse: true; color: "black"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
 
-                    // FIXED INPUTS
-                    TextField {
-                        id: tName; Layout.fillWidth: true; placeholderText: "Timer Name";
-                        selectByMouse: true; color: "black" // Key fix
-                        background: Rectangle { radius: 5; color: "#E9E9E9" }
-                    }
-                    TextField {
-                        id: tDesc; Layout.fillWidth: true; placeholderText: "Description";
-                        selectByMouse: true; color: "black"
-                        background: Rectangle { radius: 5; color: "#E9E9E9" }
-                    }
-
-                    // Ringtone Picker (Single Instance)
                     RowLayout {
                         Layout.fillWidth: true
                         TextField {
-                            Layout.fillWidth: true; readOnly: true
-                            text: selectedRingtone !== "" ? selectedRingtone : ""
-                            placeholderText: "Select Ringtone..."
+                            Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "Ringtone";
                             background: Rectangle { radius: 5; color: "#E9E9E9" }
                         }
-                        Button { text: "📂"; width: 40; onClicked: fileDialog.open() }
+                        Button { text: "📂"; onClicked: { fileDialog.target=0; fileDialog.open(); } }
                     }
                 }
 
@@ -133,7 +126,6 @@ Popup {
                             MouseArea { anchors.fill: parent; onClicked: preset="presets" }
                         }
                     }
-                    // FIXED EXCLUSIVE PRESETS
                     ColumnLayout {
                         visible: preset === "presets"
                         Repeater {
@@ -150,7 +142,7 @@ Popup {
                     }
                 }
 
-                // Custom Duration UI
+                // Custom Duration UI (Working Buttons)
                 ColumnLayout {
                     visible: mode === "custom"
                     Layout.fillWidth: true
@@ -158,19 +150,32 @@ Popup {
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
                         Repeater {
-                            model: ["Work", "Break", "L. Break"]
-                            Rectangle { width: 70; height: 30; radius: 5; color: "#E9E9E9"; border.color: "white"
-                                Text { anchors.centerIn: parent; text: modelData; color: accentColor; font.bold: true }
+                            model: ["Work", "Break", "Long"] // Mapped to 'work','break','long'
+                            Rectangle {
+                                width: 70; height: 30; radius: 5; color: (index===0 && activeCycleType==="work") || (index===1 && activeCycleType==="break") || (index===2 && activeCycleType==="long") ? "#E9E9E9" : "transparent"; border.color: "white"
+                                Text { anchors.centerIn: parent; text: modelData; color: parent.color==="#E9E9E9" ? accentColor : "white"; font.bold: true }
+                                MouseArea {
+                                    anchors.fill: parent;
+                                    onClicked: {
+                                        // Save current before switching
+                                        updateDurationFromPicker();
+                                        var types = ["work", "break", "long"];
+                                        loadPickerFromMap(types[index]);
+                                    }
+                                }
                             }
                         }
                     }
 
-                    CheckBox {
-                        id: showHoursCheck; text: "Show Hours"; checked: true
-                        contentItem: Text { text: "Show Hours"; color: "white"; leftPadding: 25 }
-                    }
+                    CheckBox { id: showHoursCheck; text: "Show Hours"; checked: true; contentItem: Text { text: "Show Hours"; color: "white"; leftPadding: 25 } }
 
-                    TimePicker { theme: popup.theme; isDuration: true; showHours: showHoursCheck.checked; Layout.alignment: Qt.AlignHCenter }
+                    TimePicker {
+                        id: customPicker; theme: popup.theme; isDuration: true; showHours: showHoursCheck.checked; Layout.alignment: Qt.AlignHCenter
+                        // When values change, update map
+                        onHoursChanged: updateDurationFromPicker()
+                        onMinutesChanged: updateDurationFromPicker()
+                        onSecondsChanged: updateDurationFromPicker()
+                    }
                 }
 
                 // Schedule
@@ -179,29 +184,31 @@ Popup {
                     Text { text: "Schedule (Alarm)"; color: "white"; font.bold: true }
                 }
 
-                // Alarm Settings
+                // Schedule Settings
                 ColumnLayout {
                     visible: isScheduled && mode !== ""
                     Layout.fillWidth: true
 
-                    // ALARM RINGTONE (Added)
-                    TextField {
-                        Layout.fillWidth: true; placeholderText: "Alarm Ringtone";
-                        selectByMouse: true; color: "black"
-                        background: Rectangle { radius: 5; color: "#E9E9E9" }
-                    }
-
-                    TimePicker { theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
+                    TimePicker { id: alarmPicker; theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
 
                     RowLayout {
-                        Text { text: "Date:"; color: "white" }
-                        TextField { Layout.fillWidth: true; placeholderText: "Today"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
+                        Layout.fillWidth: true
+                        TextField {
+                            Layout.fillWidth: true; readOnly: true; text: scheduleRingtone; placeholderText: "Alarm Ringtone";
+                            background: Rectangle { radius: 5; color: "#E9E9E9" }
+                        }
+                        Button { text: "📂"; onClicked: { fileDialog.target=1; fileDialog.open(); } }
                     }
 
-                    RowLayout {
-                        Text { text: "Repeat:"; color: "white"; font.bold: true }
-                        Item { Layout.fillWidth: true }
-                        Row {
+                    RowLayout { Text { text: "Date:"; color: "white" } TextField { Layout.fillWidth: true; placeholderText: "Today"; background: Rectangle { radius: 5; color: "#E9E9E9" } } }
+
+                    // REPEAT MASTER CHECKBOX
+                    RowLayout { CheckBox { id: repeatCheck; checked: isRepeat; onCheckedChanged: isRepeat = checked } Text { text: "Repeat"; color: "white"; font.bold: true } }
+
+                    // Repeat Options (Hidden if not repeating)
+                    ColumnLayout {
+                        visible: isRepeat
+                        RowLayout {
                             Rectangle { width: 60; height: 25; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"
                                 Text { anchors.centerIn: parent; text: "Daily"; color: repeatMode==="daily"?accentColor:"white"; font.bold: true }
                                 MouseArea { anchors.fill: parent; onClicked: repeatMode="daily" }
@@ -211,19 +218,18 @@ Popup {
                                 MouseArea { anchors.fill: parent; onClicked: repeatMode="custom" }
                             }
                         }
-                    }
-
-                    RowLayout {
-                        visible: repeatMode === "custom"
-                        Layout.alignment: Qt.AlignHCenter
-                        Repeater {
-                            id: daysRepeater
-                            model: ["M","T","W","T","F","S","S"]
-                            Rectangle {
-                                width: 30; height: 30; radius: 15
-                                color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
-                                Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
-                                MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
+                        RowLayout {
+                            visible: repeatMode === "custom"
+                            Layout.alignment: Qt.AlignHCenter
+                            Repeater {
+                                id: daysRepeater
+                                model: ["M","T","W","T","F","S","S"]
+                                Rectangle {
+                                    width: 30; height: 30; radius: 15
+                                    color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
+                                    Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
+                                    MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
+                                }
                             }
                         }
                     }
@@ -236,7 +242,23 @@ Popup {
                     RoundButton { icon: "close"; color: "#E9E9E9"; iconColor: "#797979"; onClicked: popup.close() }
                     RoundButton { icon: "check"; color: "#E9E9E9"; iconColor: accentColor;
                         onClicked: {
-                            engine.addTimer({name: tName.text});
+                            // SAVE EVERYTHING TO DB
+                            updateDurationFromPicker(); // Ensure last val saved
+                            var data = {
+                                "name": tName.text,
+                                "desc": tDesc.text,
+                                "mode": mode,
+                                "preset": preset,
+                                "presetIndex": selectedPresetIndex,
+                                "durations": durationMap, // The JSON map
+                                "isScheduled": isScheduled,
+                                "schedTime": isScheduled ? (alarmPicker.hours + ":" + alarmPicker.minutes) : "",
+                                "isRepeat": isRepeat,
+                                "repeatDays": selectedDays,
+                                "mainRingtone": selectedRingtone,
+                                "schedRingtone": scheduleRingtone
+                            };
+                            engine.addTimer(data);
                             popup.close()
                         }
                     }

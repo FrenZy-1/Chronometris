@@ -16,9 +16,16 @@ class TimerEngine : public QObject {
     Q_OBJECT
     Q_PROPERTY(double progress READ progress NOTIFY timeChanged)
     Q_PROPERTY(int timeRemaining READ timeRemaining NOTIFY timeChanged)
-    Q_PROPERTY(QString timeRemainingString READ timeRemainingString NOTIFY timeChanged) // NEW
+    Q_PROPERTY(QString timeRemainingString READ timeRemainingString NOTIFY timeChanged)
     Q_PROPERTY(QString currentType READ currentType NOTIFY typeChanged)
     Q_PROPERTY(QString currentState READ currentState NOTIFY currentStateChanged)
+    Q_PROPERTY(bool isAlarmSoon READ isAlarmSoon NOTIFY timeChanged)
+    Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
+    Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
+
+    // DATA LISTS
+    Q_PROPERTY(QVariantList timersList READ timersList NOTIFY dataChanged)
+    Q_PROPERTY(QVariantList alarmsList READ alarmsList NOTIFY dataChanged)
 
     // ANALYTICS
     Q_PROPERTY(QVariantList chartData READ chartData NOTIFY analyticsChanged)
@@ -31,7 +38,6 @@ public:
     double progress() const { return m_progress; }
     int timeRemaining() const { return m_remaining; }
 
-    // Helper to format 00:00 string in C++
     QString timeRemainingString() const {
         int m = m_remaining / 60;
         int s = m_remaining % 60;
@@ -40,6 +46,9 @@ public:
 
     QString currentState() const { return m_state; }
     QString currentType() const;
+    bool isAlarmSoon();
+    QString nextAlarmName();
+    QString nextAlarmTime();
 
     Q_INVOKABLE void start();
     Q_INVOKABLE void pause();
@@ -49,23 +58,18 @@ public:
     Q_INVOKABLE void addAlarm(const QVariantMap& data);
     Q_INVOKABLE void generateDummyData();
 
+    QVariantList timersList();
+    QVariantList alarmsList();
     QVariantList chartData();
     QList<int> pieData();
     QVariantList heatmapData();
-
-    Q_PROPERTY(bool isAlarmSoon READ isAlarmSoon NOTIFY timeChanged)
-    Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
-    Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
-
-    bool isAlarmSoon(); // Returns true if < 15 mins
-    QString nextAlarmName();
-    QString nextAlarmTime();
 
 signals:
     void timeChanged();
     void currentStateChanged();
     void typeChanged();
     void analyticsChanged();
+    void dataChanged(); // New Signal
 
 private:
     void setupQueue();

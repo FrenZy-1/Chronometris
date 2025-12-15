@@ -12,7 +12,7 @@ Flickable {
     property var theme
     property color accentColor
 
-    // Define signal so Main.qml can connect to it
+    // Define signal so Main.qml can connect to it (even if unused here, good practice)
     signal editRequested(string type, string name, string time)
 
     ColumnLayout {
@@ -26,7 +26,10 @@ Flickable {
         Column {
             visible: engine.currentState === "stopped" && !engine.isAlarmSoon
             Layout.alignment: Qt.AlignHCenter; Layout.margins: 20; Layout.topMargin: 40; spacing: 5
-            ColoredIcon { source: "assets/icons/timer.svg"; width: 80; height: 80; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
+
+            // Note: ../ path to step out of 'pages' folder
+            ColoredIcon { source: "../assets/icons/timer.svg"; width: 80; height: 80; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
+
             Text { text: "NO ACTIVE TIMER"; font.family: "Montserrat"; font.bold: true; font.pixelSize: 22; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
         }
 
@@ -45,7 +48,6 @@ Flickable {
                     Text { text: engine.currentState; font.pixelSize: 18; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
                 }
             }
-            // Controls
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 20
                 RoundButton { icon: engine.currentState==="running"?"pause":"play_arrow"; color: accentColor; onClicked: engine.currentState==="running"?engine.pause():engine.start() }
@@ -64,7 +66,6 @@ Flickable {
             Text { text: engine.nextAlarmName; font.pixelSize: 24; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             Text { text: engine.nextAlarmTime; font.pixelSize: 32; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
-            // Fixed Buttons
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 15
                 RoundButton { icon: "hourglass_bottom"; color: accentColor; onClicked: console.log("Snoozed") }

@@ -9,7 +9,6 @@ Item {
 
     property var theme
     property bool isDuration: false
-
     property int hours: 12
     property int minutes: 0
     property int seconds: 0
@@ -22,7 +21,7 @@ Item {
         anchors.centerIn: parent
         spacing: 5
 
-        // AM/PM
+        // AM/PM Toggle
         Rectangle {
             visible: !isDuration && !theme.is24HourFormat && showHours
             width: 50; height: 60; color: "#E9E9E9"; radius: 5
@@ -33,25 +32,40 @@ Item {
         // HOURS
         Column {
             visible: showHours
-            Button { text: "▲"; flat: true; height: 20; width: 50; onClicked: root.hours++ }
+            // Up Button
+            Rectangle {
+                width: 50; height: 20; color: "transparent"
+                Text { anchors.centerIn: parent; text: "▲"; color: "#797979" }
+                MouseArea { anchors.fill: parent; onClicked: root.hours = (root.hours + 1) % (isDuration ? 100 : 24) }
+            }
+            // Input
             Rectangle {
                 width: 50; height: 50; color: "#E9E9E9"; radius: 5
                 TextInput {
                     anchors.fill: parent; text: pad(root.hours); font.pixelSize: 24; font.bold: true
                     horizontalAlignment: TextInput.AlignHCenter; verticalAlignment: TextInput.AlignVCenter
-                    selectByMouse: true; color: "black" // FORCE INTERACTION
+                    selectByMouse: true; color: "black"
                     validator: IntValidator { bottom: 0; top: 99 }
                     onEditingFinished: root.hours = parseInt(text)
                 }
             }
-            Button { text: "▼"; flat: true; height: 20; width: 50; onClicked: root.hours = Math.max(0, root.hours - 1) }
+            // Down Button
+            Rectangle {
+                width: 50; height: 20; color: "transparent"
+                Text { anchors.centerIn: parent; text: "▼"; color: "#797979" }
+                MouseArea { anchors.fill: parent; onClicked: root.hours = Math.max(0, root.hours - 1) }
+            }
         }
 
-        Text { visible: showHours; text: ":"; font.pixelSize: 24; color: "white" }
+        Text { visible: showHours; text: ":"; font.pixelSize: 24; color: "white"; font.bold: true }
 
         // MINUTES
         Column {
-            Button { text: "▲"; flat: true; height: 20; width: 50; onClicked: root.minutes = (root.minutes + 1) % 60 }
+            Rectangle {
+                width: 50; height: 20; color: "transparent"
+                Text { anchors.centerIn: parent; text: "▲"; color: "#797979" }
+                MouseArea { anchors.fill: parent; onClicked: root.minutes = (root.minutes + 1) % 60 }
+            }
             Rectangle {
                 width: 50; height: 50; color: "#E9E9E9"; radius: 5
                 TextInput {
@@ -62,14 +76,22 @@ Item {
                     onEditingFinished: root.minutes = parseInt(text)
                 }
             }
-            Button { text: "▼"; flat: true; height: 20; width: 50; onClicked: root.minutes = (root.minutes - 1 < 0 ? 59 : root.minutes - 1) }
+            Rectangle {
+                width: 50; height: 20; color: "transparent"
+                Text { anchors.centerIn: parent; text: "▼"; color: "#797979" }
+                MouseArea { anchors.fill: parent; onClicked: root.minutes = (root.minutes - 1 < 0 ? 59 : root.minutes - 1) }
+            }
         }
 
         // SECONDS
-        Text { visible: isDuration; text: ":"; font.pixelSize: 24; color: "white" }
+        Text { visible: isDuration; text: ":"; font.pixelSize: 24; color: "white"; font.bold: true }
         Column {
             visible: isDuration
-            Button { text: "▲"; flat: true; height: 20; width: 50; onClicked: root.seconds = (root.seconds + 1) % 60 }
+            Rectangle {
+                width: 50; height: 20; color: "transparent"
+                Text { anchors.centerIn: parent; text: "▲"; color: "#797979" }
+                MouseArea { anchors.fill: parent; onClicked: root.seconds = (root.seconds + 1) % 60 }
+            }
             Rectangle {
                 width: 50; height: 50; color: "#E9E9E9"; radius: 5
                 TextInput {
@@ -80,7 +102,11 @@ Item {
                     onEditingFinished: root.seconds = parseInt(text)
                 }
             }
-            Button { text: "▼"; flat: true; height: 20; width: 50; onClicked: root.seconds = (root.seconds - 1 < 0 ? 59 : root.seconds - 1) }
+            Rectangle {
+                width: 50; height: 20; color: "transparent"
+                Text { anchors.centerIn: parent; text: "▼"; color: "#797979" }
+                MouseArea { anchors.fill: parent; onClicked: root.seconds = (root.seconds - 1 < 0 ? 59 : root.seconds - 1) }
+            }
         }
     }
 }

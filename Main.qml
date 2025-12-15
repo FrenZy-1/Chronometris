@@ -17,13 +17,14 @@ ApplicationWindow {
     property alias appTheme: themeManager
     ThemeManager { id: themeManager }
 
+    // Dynamic Accent Color based on Timer State
     property color currentAccentColor: {
         if (engine.currentState === "stopped") return appTheme.idleColor
         return appTheme.getTimerColor(engine.currentType, false)
     }
     Behavior on currentAccentColor { ColorAnimation { duration: 300 } }
 
-    // TOP HEADER
+    // --- TOP HEADER ---
     Rectangle {
         id: topHeader
         anchors.top: parent.top
@@ -35,7 +36,8 @@ ApplicationWindow {
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: 10
-            text: viewPager.currentItem ? viewPager.currentItem.title : "CHRONOMÉTRIS"
+            // Safety check to prevent undefined errors
+            text: (viewPager.currentItem && viewPager.currentItem.title) ? viewPager.currentItem.title : "CHRONOMÉTRIS"
             color: "white"
             font.family: "Montserrat"
             font.pixelSize: 24
@@ -54,7 +56,7 @@ ApplicationWindow {
         }
     }
 
-    // MAIN CONTENT
+    // --- MAIN CONTENT SWIPE VIEW ---
     SwipeView {
         id: viewPager
         anchors.top: topHeader.bottom
@@ -67,7 +69,7 @@ ApplicationWindow {
         DashboardPage {
             property string title: "DASHBOARD"
             theme: window.appTheme; accentColor: window.currentAccentColor
-            // Connect signal to overlay
+            // Connect signal: Open details when an item is double-clicked
             onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         TimerPage {
@@ -78,7 +80,6 @@ ApplicationWindow {
         AlarmsPage {
             property string title: "ALARMS"
             theme: window.appTheme; accentColor: window.currentAccentColor
-            // THIS FIXES THE ERROR
             onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         AnalyticsPage {
@@ -87,7 +88,7 @@ ApplicationWindow {
         }
     }
 
-    // FLOATING FOOTER
+    // --- FLOATING FOOTER NAVIGATION ---
     Item {
         id: bottomContainer
         width: parent.width * 0.9
@@ -97,15 +98,12 @@ ApplicationWindow {
         anchors.horizontalCenter: parent.horizontalCenter
         z: 100
 
-        // Navigation Pill
+        // Navigation Pill Background
         Rectangle {
             anchors.fill: parent
             radius: height / 2
             color: window.currentAccentColor
-
-            // Shadow using Material
-            layer.enabled: true
-            Material.elevation: 10
+            layer.enabled: true; Material.elevation: 10
 
             RowLayout {
                 anchors.fill: parent
@@ -127,63 +125,48 @@ ApplicationWindow {
 
                         // White Circle Indicator
                         Rectangle {
-                            anchors.centerIn: parent
-                            width: 45; height: 45; radius: 22.5
-                            color: "white"
-                            opacity: isActive ? 0.2 : 0
+                            anchors.centerIn: parent; width: 45; height: 45; radius: 22.5
+                            color: "white"; opacity: isActive ? 0.2 : 0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
 
+                        // Icon + Text
                         Column {
-                            anchors.centerIn: parent
-                            spacing: 2 // Tiny space between icon and text
-
+                            anchors.centerIn: parent; spacing: 2
                             ColoredIcon {
                                 source: "assets/icons/" + modelData.icon + ".svg"
-                                width: 24; height: 24
+                                width: 40; height: 40
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                             }
-
-                            // RESTORED LABELS
                             Text {
                                 text: modelData.name
                                 color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
-                                font.family: "Montserrat"
-                                font.pixelSize: 9
+                                font.family: "Montserrat"; font.pixelSize: 9
                                 font.weight: isActive ? Font.Bold : Font.Normal
                                 anchors.horizontalCenter: parent.horizontalCenter
                             }
                         }
-
                         MouseArea { anchors.fill: parent; onClicked: viewPager.currentIndex = modelData.pageIndex }
                     }
                 }
             }
         }
 
-        // FAB (Add Button)
+        // FAB (Add Button) - Only visible on Timer/Alarm pages
         RoundButton {
             id: fab
-            width: 50  // Explicit size
-            height: 50 // Explicit size ensures Item height doesn't drift
-
-            // Position: Docked to the right of the footer
-            anchors.right: parent.right
-            anchors.rightMargin: 10
-            anchors.verticalCenter: parent.top
-            anchors.verticalCenterOffset: -10
-
-            // Only show on Timer (1) and Alarm (2) pages
+            width: 50; height: 50
+            anchors.right: parent.right; anchors.rightMargin: 10
+            anchors.verticalCenter: parent.top; anchors.verticalCenterOffset: -10
             visible: viewPager.currentIndex === 1 || viewPager.currentIndex === 2
             scale: visible ? 1.0 : 0.0
             Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
 
-            // Visuals
-            color: "white"                        // White Background
-            iconColor: window.currentAccentColor // Green/Blue/Purple Icon
+            color: "white"
+            iconColor: window.currentAccentColor
             icon: "add"
-            text: ""                             // No label for FAB
+            text: ""
 
             onClicked: {
                 if (viewPager.currentIndex === 1) addTimerOverlay.open()
@@ -192,7 +175,7 @@ ApplicationWindow {
         }
     }
 
-    // OVERLAYS (Define them here globally)
+    // --- GLOBAL OVERLAYS ---
     AboutOverlay { id: aboutOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
     AddTimerOverlay { id: addTimerOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
     AddAlarmOverlay { id: addAlarmOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }

@@ -18,11 +18,14 @@ public:
     void addAlarm(const QVariantMap& data);
 
     // Queries
-    QVariantList getWeeklyStats();
-    QList<int> getSessionDistribution(); // Returns 3 values (Work, Break, Long)
-    QVariantList getHeatmapData(); // Returns 70 values for heatmap
+    QList<int> getWeeklyStats();
+    QList<int> getSessionDistribution();
+    QVariantList getHeatmapData();
 
-    // Debug
+    // NEW: Fetch Lists for UI
+    QVariantList getTimers();
+    QVariantList getAlarms();
+
     void generateDummyData();
 
 private:

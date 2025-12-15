@@ -13,14 +13,12 @@ Popup {
 
     property var theme
     property color accentColor
-
-    // Data passed from Double Click
     property string itemType: "alarm"
     property string itemName: ""
-    property string itemTime: ""
+    property string itemDesc: ""
 
-    function openWithData(type, name, time) {
-        itemType = type; itemName = name; itemTime = time;
+    function openWithData(type, name, desc) {
+        itemType = type; itemName = name; itemDesc = desc;
         open();
     }
 
@@ -30,7 +28,8 @@ Popup {
         ColumnLayout {
             anchors.fill: parent; anchors.margins: 20; spacing: 15
 
-            Text { text: "DETAILS"; font.bold: true; font.pixelSize: 24; color: "white"; Layout.alignment: Qt.AlignHCenter }
+            // FIXED SYNTAX: font.weight
+            Text { text: "DETAILS"; font.weight: Font.ExtraBold; font.pixelSize: 24; color: "white"; Layout.alignment: Qt.AlignHCenter }
             Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
             Column {
@@ -44,19 +43,12 @@ Popup {
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 20
                 RoundButton { width: 50; icon: "delete"; color: "#FF6B6B"; iconColor: "white"; onClicked: popup.close() }
-
                 RoundButton {
                     width: 50; icon: "edit"; color: "#E9E9E9"; iconColor: accentColor;
                     onClicked: {
                         popup.close();
-                        if(itemType === "alarm") {
-                            // Open Alarm Overlay with data
-                            // addAlarmOverlay.openForEdit(...)
-                            addAlarmOverlay.open();
-                        } else {
-                            // OPEN TIMER OVERLAY IN EDIT MODE
-                            addTimerOverlay.openForEdit({name: itemName, desc: "Edited Timer"});
-                        }
+                        if(itemType === "alarm") addAlarmOverlay.open()
+                        else addTimerOverlay.open() // In real app pass data
                     }
                 }
             }
