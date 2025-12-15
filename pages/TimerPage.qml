@@ -40,8 +40,8 @@ Flickable {
             spacing: 15
             RoundButton { icon: "pause"; text: "Pause"; color: theme.idleColor }
             RoundButton { icon: "stop"; text: "Stop"; color: theme.idleColor }
-            RoundButton { icon: "skip_next"; text: "Skip"; color: theme.idleColor }
             RoundButton { icon: "fast_forward"; text: "Next"; color: theme.idleColor }
+            RoundButton { icon: "skip_next"; text: "Skip"; color: theme.idleColor }
         }
 
         // Separator

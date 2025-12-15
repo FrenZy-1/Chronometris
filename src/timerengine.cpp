@@ -1,25 +1,37 @@
-// src/TimerEngine.cpp
 #include "TimerEngine.h"
 #include <QDebug>
 
 TimerEngine::TimerEngine(QObject *parent) : QObject(parent) {
     m_timer = new QTimer(this);
-    m_timer->setInterval(1000); // 1 second
+    m_timer->setInterval(1000);
     connect(m_timer, &QTimer::timeout, this, &TimerEngine::processTimer);
 
     setupQueue();
 }
 
 void TimerEngine::setupQueue() {
-    // Implementing the specific Pomodoro Queue requested
+    m_sessionQueue.clear();
+
+    // Standard Pomodoro Cycle (4 Works, 3 Short Breaks, 1 Long Break)
+    // 1
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"shortBreak", 5 * 60});
+    // 2
+    m_sessionQueue.push_back({"work", 25 * 60});
+    m_sessionQueue.push_back({"shortBreak", 5 * 60});
+    // 3
+    m_sessionQueue.push_back({"work", 25 * 60});
+    m_sessionQueue.push_back({"shortBreak", 5 * 60});
+    // 4
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"longBreak", 15 * 60});
 }
 
 QString TimerEngine::currentType() const {
+    // If stopped, we might want to show what's coming up, or "idle"
     if (m_sessionQueue.empty()) return "idle";
+
+    // If running/paused, return the actual type
     return m_sessionQueue.front().type;
 }
 
@@ -28,6 +40,7 @@ void TimerEngine::start() {
         m_state = "running";
         m_timer->start();
         emit currentStateChanged();
+        emit typeChanged(); // Ensure UI updates color
     }
 }
 
@@ -42,7 +55,6 @@ void TimerEngine::pause() {
 void TimerEngine::stop() {
     m_state = "stopped";
     m_timer->stop();
-    // Reset to initial duration of current session
     if (!m_sessionQueue.empty()) {
         m_remaining = m_sessionQueue.front().duration;
         m_totalDuration = m_remaining;
@@ -50,6 +62,7 @@ void TimerEngine::stop() {
     }
     emit currentStateChanged();
     emit timeChanged();
+    emit typeChanged(); // Reset color to idle/next
 }
 
 void TimerEngine::skip() {
@@ -67,19 +80,16 @@ void TimerEngine::processTimer() {
 }
 
 void TimerEngine::completeSession() {
-    stop();
+    m_timer->stop();
+    m_state = "stopped";
+    emit currentStateChanged();
 
     if (!m_sessionQueue.empty()) {
-        // Push to History Stack (Stack Implementation)
         m_historyStack.push(m_sessionQueue.front());
-
-        // Remove from Queue
         m_sessionQueue.pop_front();
 
-        // If Queue is empty, refill it (Circular logic)
         if (m_sessionQueue.empty()) setupQueue();
 
-        // Prepare next session
         Session next = m_sessionQueue.front();
         m_remaining = next.duration;
         m_totalDuration = next.duration;
@@ -87,16 +97,15 @@ void TimerEngine::completeSession() {
 
         emit typeChanged();
         emit timeChanged();
+
+        // Auto-start logic could go here
     }
 }
 
 void TimerEngine::undoLastSession() {
     if (!m_historyStack.isEmpty()) {
-        // Pop from history and push back to front of queue
         Session last = m_historyStack.pop();
         m_sessionQueue.push_front(last);
-
-        // Reset state to this restored session
         stop();
         emit typeChanged();
     }
