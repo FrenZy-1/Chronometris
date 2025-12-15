@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QTimer>
 #include <deque>
-#include <stack>
 #include <QVariantMap>
 
 struct Session {
@@ -23,70 +22,68 @@ class TimerEngine : public QObject {
     Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
     Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
 
-    // DATA LISTS
     Q_PROPERTY(QVariantList timersList READ timersList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList alarmsList READ alarmsList NOTIFY dataChanged)
+    Q_PROPERTY(QVariantList historyList READ historyList NOTIFY analyticsChanged)
 
-    // ANALYTICS
+    Q_PROPERTY(QString todayFocusString READ todayFocusString NOTIFY analyticsChanged)
+    Q_PROPERTY(int todaySessionCount READ todaySessionCount NOTIFY analyticsChanged)
+    Q_PROPERTY(int currentStreak READ currentStreak NOTIFY analyticsChanged)
     Q_PROPERTY(QVariantList chartData READ chartData NOTIFY analyticsChanged)
-    Q_PROPERTY(QList<int> pieData READ pieData NOTIFY analyticsChanged)
-    Q_PROPERTY(QVariantList heatmapData READ heatmapData NOTIFY analyticsChanged)
 
 public:
     explicit TimerEngine(QObject *parent = nullptr);
 
     double progress() const { return m_progress; }
     int timeRemaining() const { return m_remaining; }
-
-    QString timeRemainingString() const {
-        int m = m_remaining / 60;
-        int s = m_remaining % 60;
-        return QString("%1:%2").arg(m, 2, 10, QChar('0')).arg(s, 2, 10, QChar('0'));
-    }
-
+    QString timeRemainingString() const;
     QString currentState() const { return m_state; }
     QString currentType() const;
     bool isAlarmSoon();
     QString nextAlarmName();
     QString nextAlarmTime();
 
+    QString todayFocusString();
+    int todaySessionCount();
+    int currentStreak();
+
+    QVariantList timersList();
+    QVariantList alarmsList();
+    QVariantList historyList();
+    QVariantList chartData();
+
     Q_INVOKABLE void start();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void stop();
     Q_INVOKABLE void skip();
+    Q_INVOKABLE void loadAndStartSession(const QVariantMap& config);
     Q_INVOKABLE void addTimer(const QVariantMap& data);
     Q_INVOKABLE void addAlarm(const QVariantMap& data);
-    Q_INVOKABLE void generateDummyData();
-    Q_INVOKABLE void loadAndStartSession(const QVariantMap& timerConfig);
     Q_INVOKABLE void deleteTimer(int id);
     Q_INVOKABLE void deleteAlarm(int id);
-
-    QVariantList timersList();
-    QVariantList alarmsList();
-    QVariantList chartData();
-    QList<int> pieData();
-    QVariantList heatmapData();
+    Q_INVOKABLE void generateDummyData();
 
 signals:
     void timeChanged();
     void currentStateChanged();
     void typeChanged();
     void analyticsChanged();
-    void dataChanged(); // New Signal
+    void dataChanged();
 
 private:
-    void setupQueue();
     void processTimer();
     void completeSession();
 
     QTimer *m_timer;
     std::deque<Session> m_sessionQueue;
-    std::stack<Session> m_historyStack;
-
     QString m_state = "stopped";
     int m_remaining = 1500;
     int m_totalDuration = 1500;
     double m_progress = 0.0;
+
+    int m_todayFocusSeconds = 0;
+    int m_todaySessions = 0;
+    int m_streak = 3;
 };
 
 #endif // TIMERENGINE_H

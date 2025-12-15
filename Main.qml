@@ -23,6 +23,11 @@ ApplicationWindow {
     }
     Behavior on currentAccentColor { ColorAnimation { duration: 300 } }
 
+    // Component.onCompleted: {
+    //         // Auto-generate data if DB is empty so the Alarms page isn't blank
+    //         engine.generateDummyData()
+    //     }
+
     // --- HEADER ---
     Rectangle {
         id: topHeader
