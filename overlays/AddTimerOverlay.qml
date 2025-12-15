@@ -202,7 +202,7 @@ Popup {
                 Item { Layout.fillHeight: true }
                 RowLayout { visible: mode!==""; Layout.alignment: Qt.AlignHCenter; spacing: 30
                     Rectangle { width:50; height:50; radius:25; color:"#E9E9E9"; Text{anchors.centerIn:parent;text:"X";font.pixelSize:theme.fontSizeH3} MouseArea{anchors.fill:parent;onClicked:popup.close()} }
-                    Rectangle { width:50; height:50; radius:25; color:"#E9E9E9"; Text{anchors.centerIn:parent;text:"V";font.pixelSize:theme.fontSizeH3;color:accentColor}
+                    Rectangle { width:50; height:50; radius:25; color:"#E9E9E9"; Text{anchors.centerIn:parent;text:"✓";font.pixelSize:theme.fontSizeH3;color:accentColor}
                         MouseArea { anchors.fill:parent; onClicked: {
                             updateDurationFromPicker();
                             var data = { "id":editId, "name":tName.text.trim()===""?(mode==="pomodoro"?"Pomodoro":"Custom Timer"):tName.text, "desc":tDesc.text, "mode":mode, "durations":durationMap, "isScheduled":isScheduled, "isRepeat":isRepeat, "repeatMode":repeatMode, "repeatDays":selectedDays, "preset":preset, "presetIndex":selectedPresetIndex, "mainRingtone":mainRingtone, "schedRingtone":schedRingtone };

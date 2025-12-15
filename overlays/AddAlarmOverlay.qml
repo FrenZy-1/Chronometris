@@ -104,7 +104,7 @@ Popup {
                 Item { Layout.fillHeight: true }
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter; spacing: 40
-                    Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✕"; font.pixelSize: theme.fontSizeH3 } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
+                    Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✘"; font.pixelSize: theme.fontSizeH3 } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
                     Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✓"; font.pixelSize: theme.fontSizeH3; color: accentColor }
                         MouseArea { anchors.fill: parent; onClicked: {
                             engine.addAlarm({ "id": editId, "name": aName.text.trim()===""?"Alarm":aName.text, "desc": aDesc.text, "ringtone": selectedRingtone, "time": aTime.hours+":"+aTime.minutes, "days": isRepeat ? (repeatMode==="daily"?"Daily":JSON.stringify(selectedDays)) : "Once" });

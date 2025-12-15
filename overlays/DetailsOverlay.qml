@@ -33,6 +33,7 @@ Popup {
         ColumnLayout {
             anchors.fill: parent; anchors.margins: 20; spacing: 15
 
+            // HEADER
             Text {
                 text: "DETAILS";
                 font.family: theme.mainFont; font.weight: theme.fontWeightExtraBold; font.pixelSize: theme.fontSizeH3;
@@ -40,29 +41,42 @@ Popup {
             }
             Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
-            Column {
-                Layout.alignment: Qt.AlignHCenter; spacing: 5
+            // --- CONTENT (Directly in Layout now) ---
 
-                Text {
-                    text: itemName;
-                    font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeH3;
-                    color: "white"; anchors.horizontalCenter: parent.horizontalCenter
-                }
+            // 1. TITLE
+            Text {
+                text: itemName;
+                color: "white"
+                font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeH3;
 
-                // CHECK IF EMPTY
-                Text {
-                    visible: itemDesc !== ""
-                    text: itemDesc; color: "white"; opacity: 0.8;
-                    font.family: theme.mainFont; font.pixelSize: theme.fontSizeSmall
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
+                Layout.fillWidth: true          // Fill space
+                horizontalAlignment: Text.AlignHCenter // Center text
+                elide: Text.ElideRight          // Handle "Very Long Title..."
+            }
 
-                // Show Ringtones if present
-                Text {
-                    visible: itemConfig.mainRingtone !== undefined && itemConfig.mainRingtone !== ""
-                    text: "🎵 " + (itemConfig.mainRingtone ? itemConfig.mainRingtone.split("/").pop() : "")
-                    font.family: theme.mainFont; font.pixelSize: theme.fontSizeSmall; color: "white"; anchors.horizontalCenter: parent.horizontalCenter
-                }
+            // 2. DESCRIPTION
+            Text {
+                visible: itemDesc !== ""
+                text: itemDesc;
+                color: "white"; opacity: 0.8;
+                font.family: theme.mainFont; font.pixelSize: theme.fontSizeSmall
+
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.Wrap             // Wrap long descriptions
+                maximumLineCount: 3             // Limit height
+                elide: Text.ElideRight
+            }
+
+            // 3. RINGTONE
+            Text {
+                visible: itemConfig && itemConfig.mainRingtone !== undefined && itemConfig.mainRingtone !== ""
+                text: "🎵 " + (itemConfig.mainRingtone ? itemConfig.mainRingtone.split("/").pop() : "")
+                font.family: theme.mainFont; font.pixelSize: theme.fontSizeSmall; color: "white";
+
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                elide: Text.ElideMiddle         // "song...name.mp3"
             }
 
             Item { Layout.fillHeight: true }
