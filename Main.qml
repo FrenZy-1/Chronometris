@@ -17,38 +17,24 @@ ApplicationWindow {
     property alias appTheme: themeManager
     ThemeManager { id: themeManager }
 
-    // Dynamic Accent Color based on Timer State
     property color currentAccentColor: {
         if (engine.currentState === "stopped") return appTheme.idleColor
         return appTheme.getTimerColor(engine.currentType, false)
     }
     Behavior on currentAccentColor { ColorAnimation { duration: 300 } }
 
-    // --- TOP HEADER ---
+    // --- HEADER ---
     Rectangle {
         id: topHeader
-        anchors.top: parent.top
-        width: parent.width
-        height: 80
-        color: window.currentAccentColor
-        z: 100
-
+        anchors.top: parent.top; width: parent.width; height: 80
+        color: window.currentAccentColor; z: 100
         Text {
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: 10
-            // Safety check to prevent undefined errors
+            anchors.centerIn: parent; anchors.verticalCenterOffset: 10
             text: (viewPager.currentItem && viewPager.currentItem.title) ? viewPager.currentItem.title : "CHRONOMÉTRIS"
-            color: "white"
-            font.family: "Montserrat"
-            font.pixelSize: 24
-            font.weight: Font.Bold
-            font.capitalization: Font.AllUppercase
+            color: "white"; font.family: "Montserrat"; font.pixelSize: 24; font.weight: Font.Bold; font.capitalization: Font.AllUppercase
         }
-
-        // Menu Icon
         Rectangle {
-            width: 36; height: 36; radius: 10
-            color: "transparent"; border.color: "white"; border.width: 1
+            width: 36; height: 36; radius: 10; color: "transparent"; border.color: "white"; border.width: 1
             anchors.right: parent.right; anchors.rightMargin: 20
             anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: 10
             Text { anchors.centerIn: parent; text: ":"; color: "white"; font.bold: true; font.pixelSize: 20; anchors.verticalCenterOffset: -2 }
@@ -56,20 +42,15 @@ ApplicationWindow {
         }
     }
 
-    // --- MAIN CONTENT SWIPE VIEW ---
+    // --- CONTENT ---
     SwipeView {
         id: viewPager
-        anchors.top: topHeader.bottom
-        anchors.bottom: parent.bottom
-        anchors.left: parent.left
-        anchors.right: parent.right
-        clip: true
-        interactive: true
+        anchors.top: topHeader.bottom; anchors.bottom: parent.bottom; anchors.left: parent.left; anchors.right: parent.right
+        clip: true; interactive: true
 
         DashboardPage {
             property string title: "DASHBOARD"
             theme: window.appTheme; accentColor: window.currentAccentColor
-            // Connect signal: Open details when an item is double-clicked
             onEditRequested: (type, name, config, id) => detailsOverlay.openWithData(type, name, config, id)
         }
         TimerPage {
@@ -88,29 +69,17 @@ ApplicationWindow {
         }
     }
 
-    // --- FLOATING FOOTER NAVIGATION ---
+    // --- FOOTER ---
     Item {
         id: bottomContainer
-        width: parent.width * 0.9
-        height: 70
-        anchors.bottom: parent.bottom
-        anchors.bottomMargin: 30
-        anchors.horizontalCenter: parent.horizontalCenter
-        z: 100
+        width: parent.width * 0.9; height: 70
+        anchors.bottom: parent.bottom; anchors.bottomMargin: 30; anchors.horizontalCenter: parent.horizontalCenter; z: 100
 
-        // Navigation Pill Background
         Rectangle {
-            anchors.fill: parent
-            radius: height / 2
-            color: window.currentAccentColor
+            anchors.fill: parent; radius: height / 2; color: window.currentAccentColor
             layer.enabled: true; Material.elevation: 10
-
             RowLayout {
-                anchors.fill: parent
-                anchors.leftMargin: 20
-                anchors.rightMargin: 20
-                spacing: 0
-
+                anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20; spacing: 0
                 Repeater {
                     model: [
                         { name: "Dashboard", icon: "dashboard", pageIndex: 0 },
@@ -118,32 +87,26 @@ ApplicationWindow {
                         { name: "Alarms", icon: "alarm", pageIndex: 2 },
                         { name: "Analytics", icon: "analytics", pageIndex: 3 }
                     ]
-
                     delegate: Item {
                         Layout.fillWidth: true; Layout.fillHeight: true
                         property bool isActive: viewPager.currentIndex === modelData.pageIndex
-
-                        // White Circle Indicator
                         Rectangle {
                             anchors.centerIn: parent; width: 45; height: 45; radius: 22.5
                             color: "white"; opacity: isActive ? 0.2 : 0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
-
-                        // Icon + Text
                         Column {
-                            anchors.centerIn: parent; spacing: 2
+                            anchors.centerIn: parent; spacing: 0
                             ColoredIcon {
                                 source: "assets/icons/" + modelData.icon + ".svg"
-                                width: 24; height: 24 // EXPLICIT SIZE
+                                // FIXED SIZE HERE
+                                width: 60; height: 60
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                             }
                             Text {
-                                text: modelData.name
-                                color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
-                                font.family: "Montserrat"; font.pixelSize: 9
-                                font.weight: isActive ? Font.Bold : Font.Normal
+                                text: modelData.name; color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
+                                font.family: "Montserrat"; font.pixelSize: themeManager.fontSizeSmall; font.weight: isActive ? Font.Bold : Font.Normal
                                 anchors.horizontalCenter: parent.horizontalCenter
                             }
                         }
@@ -153,7 +116,6 @@ ApplicationWindow {
             }
         }
 
-        // FAB (Add Button) - Only visible on Timer/Alarm pages
         RoundButton {
             id: fab
             width: 50; height: 50
@@ -162,12 +124,7 @@ ApplicationWindow {
             visible: viewPager.currentIndex === 1 || viewPager.currentIndex === 2
             scale: visible ? 1.0 : 0.0
             Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
-
-            color: "white"
-            iconColor: window.currentAccentColor
-            icon: "add"
-            text: ""
-
+            color: "white"; iconColor: window.currentAccentColor; icon: "add"; text: ""
             onClicked: {
                 if (viewPager.currentIndex === 1) addTimerOverlay.open()
                 else if (viewPager.currentIndex === 2) addAlarmOverlay.open()
@@ -175,7 +132,7 @@ ApplicationWindow {
         }
     }
 
-    // --- GLOBAL OVERLAYS ---
+    // --- OVERLAYS ---
     AboutOverlay { id: aboutOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
     AddTimerOverlay { id: addTimerOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
     AddAlarmOverlay { id: addAlarmOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }

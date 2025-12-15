@@ -21,6 +21,7 @@ Popup {
     property string repeatMode: "daily"
     property var selectedDays: []
     property string selectedRingtone: ""
+    property string selectedDateString: "Today"
 
     function reset() {
         if (!isEditMode) {
@@ -83,17 +84,23 @@ Popup {
 
                 TimePicker { id: aTime; theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
 
-                // REPEAT SECTION
+                // DATE PICKER BUTTON
                 RowLayout {
-                    CheckBox { id: repeatCheck; checked: isRepeat; onCheckedChanged: isRepeat = checked }
-                    Text { text: "Repeat"; color: "white"; font.bold: true }
+                    Text { text: "Date:"; color: "white" }
+                    Button {
+                        text: selectedDateString; Layout.fillWidth: true
+                        onClicked: datePopup.open()
+                    }
                 }
+
+                RowLayout { CheckBox { id: repeatCheck; checked: isRepeat; onCheckedChanged: isRepeat=checked } Text { text: "Repeat"; color: "white"; font.bold: true } }
 
                 ColumnLayout {
                     visible: isRepeat
                     RowLayout {
-                        Rectangle { width: 70; height: 30; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Daily";color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="daily"} }
-                        Rectangle { width: 70; height: 30; color: repeatMode==="custom"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Custom";color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="custom"} }
+                        Layout.alignment: Qt.AlignHCenter
+                        Rectangle { width: 60; height: 25; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Daily";color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="daily"} }
+                        Rectangle { width: 60; height: 25; color: repeatMode==="custom"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Custom";color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="custom"} }
                     }
                     RowLayout {
                         visible: repeatMode === "custom"
@@ -109,6 +116,12 @@ Popup {
                         }
                     }
                 }
+
+                // // DATE PICKER BUTTON (New)
+                // RowLayout {
+                //     Text { text: "Date:"; color: "white" }
+                //     Button { text: selectedDateString; Layout.fillWidth: true; onClicked: datePopup.open() }
+                // }
 
                 RowLayout { CheckBox { text: "Delete after ringing?"; contentItem: Text { text: "Delete after ringing?"; color: "white"; leftPadding: 10 } } }
 
@@ -132,7 +145,17 @@ Popup {
                     }
                 }
                 Item { height: 10 }
+
             }
+        }
+    }
+
+    // DATE POPUP (Add at bottom)
+    Popup {
+        id: datePopup; width: 300; height: 300; anchors.centerIn: parent; modal: true
+        background: Rectangle { radius: 10; color: accentColor; border.color: "white" }
+        contentItem: DatePicker {
+            onSelectedDateChanged: { selectedDateString = selectedDate.toLocaleDateString(); datePopup.close() }
         }
     }
 }

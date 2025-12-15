@@ -71,52 +71,23 @@ Flickable {
             }
         }
 
-        // BAR CHART (Fixed Geometry)
+        // BAR CHART
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
             Text { text: "Weekly Hours:"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
-
-            // Fixed Height Container
             Item {
-                Layout.fillWidth: true; Layout.preferredHeight: 140
-
+                Layout.fillWidth: true; Layout.preferredHeight: 160 // Taller
                 RowLayout {
                     anchors.centerIn: parent; spacing: 15
-
                     Repeater {
-                        model: engine.chartData // [{work:2, short:1, long:0}, ...]
-
-                        Column {
-                            spacing: 5
-
-                            // Bar Container (Align Bottom)
-                            Item {
-                                width: 30; height: 100
-
-                                // Work (Blue)
-                                Rectangle {
-                                    width: 8; radius: 2; color: theme.workFill
-                                    height: Math.min(modelData.work * 10, parent.height)
-                                    anchors.bottom: parent.bottom; anchors.left: parent.left
-                                }
-                                // Short (Pink)
-                                Rectangle {
-                                    width: 8; radius: 2; color: theme.shortBreakFill
-                                    height: Math.min(modelData.short * 10, parent.height)
-                                    anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
-                                }
-                                // Long (Purple)
-                                Rectangle {
-                                    width: 8; radius: 2; color: theme.longBreakFill
-                                    height: Math.min(modelData.long * 10, parent.height)
-                                    anchors.bottom: parent.bottom; anchors.right: parent.right
-                                }
+                        model: engine.chartData
+                        Column { spacing: 5
+                            Item { width: 30; height: 120
+                                Rectangle { width: 8; radius: 2; color: theme.workFill; height: Math.min(modelData.work * 30, parent.height); anchors.bottom: parent.bottom; anchors.left: parent.left }
+                                Rectangle { width: 8; radius: 2; color: theme.shortBreakFill; height: Math.min(modelData.short * 30, parent.height); anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter }
+                                Rectangle { width: 8; radius: 2; color: theme.longBreakFill; height: Math.min(modelData.long * 30, parent.height); anchors.bottom: parent.bottom; anchors.right: parent.right }
                             }
-
-                            Text {
-                                text: ["M","T","W","T","F","S","S"][index];
-                                font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter
-                            }
+                            Text { text: ["M","T","W","T","F","S","S"][index]; font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
                         }
                     }
                 }

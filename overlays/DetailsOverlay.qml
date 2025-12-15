@@ -57,11 +57,14 @@ Popup {
                     color: "white"; anchors.horizontalCenter: parent.horizontalCenter
                 }
 
-                Text {
-                    text: itemDesc;
-                    font.family: "Montserrat"; font.pixelSize: 14;
-                    color: "white"; opacity: 0.8; anchors.horizontalCenter: parent.horizontalCenter;
-                    wrapMode: Text.Wrap; width: 250; horizontalAlignment: Text.AlignHCenter
+                Column {
+                    Layout.alignment: Qt.AlignHCenter; spacing: 5
+                    Text { text: itemName; font.bold: true; color: "white" }
+                    // CHECK IF EMPTY
+                    Text {
+                        visible: itemDesc !== ""
+                        text: itemDesc; color: "white"; opacity: 0.8
+                    }
                 }
 
                 // Show Ringtones if present
