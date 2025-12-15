@@ -210,7 +210,7 @@ Popup {
                     Rectangle { width:50; height:50; radius:25; color:"#E9E9E9"; Text{anchors.centerIn:parent;text:"V";color:accentColor}
                         MouseArea { anchors.fill:parent; onClicked: {
                             updateDurationFromPicker();
-                            var data = { "id":editId, "name":tName.text, "desc":tDesc.text, "mode":mode, "durations":durationMap, "isScheduled":isScheduled, "isRepeat":isRepeat, "repeatMode":repeatMode, "repeatDays":selectedDays, "preset":preset, "presetIndex":selectedPresetIndex, "mainRingtone":mainRingtone, "schedRingtone":schedRingtone };
+                            var data = { "id":editId, "name": tName.text === "" ? (mode==="pomodoro" ? "Pomodoro" : "Custom Timer") : tName.text, "desc":tDesc.text, "mode":mode, "durations":durationMap, "isScheduled":isScheduled, "isRepeat":isRepeat, "repeatMode":repeatMode, "repeatDays":selectedDays, "preset":preset, "presetIndex":selectedPresetIndex, "mainRingtone":mainRingtone, "schedRingtone":schedRingtone };
                             engine.addTimer(data);
                             if(!isScheduled) engine.loadAndStartSession(data);
                             popup.close();
@@ -222,7 +222,7 @@ Popup {
         }
     }
 
-    Popup { id: datePopup; width: 300; height: 300; anchors.centerIn: parent; modal: true
+    Popup { id: datePopup; width: 360; height: 300; anchors.centerIn: parent; modal: true
         background: Rectangle { radius: 10; color: accentColor; border.color: "white" }
         contentItem: DatePicker { onSelectedDateChanged: { selectedDateString = selectedDate.toLocaleDateString(); datePopup.close() } }
     }

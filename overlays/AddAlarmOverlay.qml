@@ -111,7 +111,7 @@ Popup {
             }
         }
     }
-    Popup { id: datePopup; width: 300; height: 300; anchors.centerIn: parent; modal: true
+    Popup { id: datePopup; width: 300; height: 360; anchors.centerIn: parent; modal: true
         background: Rectangle { radius: 10; color: accentColor; border.color: "white" }
         contentItem: DatePicker { onSelectedDateChanged: { selectedDateString = selectedDate.toLocaleDateString(); datePopup.close() } }
     }
