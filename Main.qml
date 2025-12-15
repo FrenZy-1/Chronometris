@@ -23,11 +23,6 @@ ApplicationWindow {
     }
     Behavior on currentAccentColor { ColorAnimation { duration: 300 } }
 
-    // Component.onCompleted: {
-    //         // Auto-generate data if DB is empty so the Alarms page isn't blank
-    //         engine.generateDummyData()
-    //     }
-
     // --- HEADER ---
     Rectangle {
         id: topHeader
@@ -36,13 +31,23 @@ ApplicationWindow {
         Text {
             anchors.centerIn: parent; anchors.verticalCenterOffset: 10
             text: (viewPager.currentItem && viewPager.currentItem.title) ? viewPager.currentItem.title : "CHRONOMÉTRIS"
-            color: "white"; font.family: "Montserrat"; font.pixelSize: 24; font.weight: Font.Bold; font.capitalization: Font.AllUppercase
+            color: "white"
+            // THEME FONTS
+            font.family: themeManager.mainFont
+            font.pixelSize: themeManager.fontSizeH3
+            font.weight: themeManager.fontWeightBold
+            font.capitalization: Font.AllUppercase
         }
         Rectangle {
             width: 36; height: 36; radius: 10; color: "transparent"; border.color: "white"; border.width: 1
             anchors.right: parent.right; anchors.rightMargin: 20
             anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: 10
-            Text { anchors.centerIn: parent; text: ":"; color: "white"; font.bold: true; font.pixelSize: 20; anchors.verticalCenterOffset: -2 }
+            Text {
+                anchors.centerIn: parent; text: ":"; color: "white";
+                font.family: themeManager.mainFont
+                font.bold: true; font.pixelSize: themeManager.fontSizeH3;
+                anchors.verticalCenterOffset: -2
+            }
             MouseArea { anchors.fill: parent; onClicked: aboutOverlay.open() }
         }
     }
@@ -74,7 +79,7 @@ ApplicationWindow {
         }
     }
 
-    // --- FOOTER ---
+    // --- FOOTER (FIXED VISUALS) ---
     Item {
         id: bottomContainer
         width: parent.width * 0.9; height: 70
@@ -83,8 +88,10 @@ ApplicationWindow {
         Rectangle {
             anchors.fill: parent; radius: height / 2; color: window.currentAccentColor
             layer.enabled: true; Material.elevation: 10
+
             RowLayout {
                 anchors.fill: parent; anchors.leftMargin: 20; anchors.rightMargin: 20; spacing: 0
+
                 Repeater {
                     model: [
                         { name: "Dashboard", icon: "dashboard", pageIndex: 0 },
@@ -92,29 +99,44 @@ ApplicationWindow {
                         { name: "Alarms", icon: "alarm", pageIndex: 2 },
                         { name: "Analytics", icon: "analytics", pageIndex: 3 }
                     ]
+
                     delegate: Item {
                         Layout.fillWidth: true; Layout.fillHeight: true
                         property bool isActive: viewPager.currentIndex === modelData.pageIndex
+
+                        // 1. CIRCLE INDICATOR (Centered, slightly shifted up)
                         Rectangle {
-                            anchors.centerIn: parent; width: 45; height: 45; radius: 22.5
-                            color: "white"; opacity: isActive ? 0.2 : 0
+                            id: indicator
+                            width: 45; height: 45; radius: 22.5
+                            anchors.centerIn: parent
+                            anchors.verticalCenterOffset: -6 // Push up to make room for text
+                            color: "white"
+                            opacity: isActive ? 0.2 : 0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
-                        Column {
-                            anchors.centerIn: parent; spacing: 0
-                            ColoredIcon {
-                                source: "assets/icons/" + modelData.icon + ".svg"
-                                // FIXED SIZE HERE
-                                width: 60; height: 60
-                                anchors.horizontalCenter: parent.horizontalCenter
-                                color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
-                            }
-                            Text {
-                                text: modelData.name; color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
-                                font.family: "Montserrat"; font.pixelSize: themeManager.fontSizeSmall; font.weight: isActive ? Font.Bold : Font.Normal
-                                anchors.horizontalCenter: parent.horizontalCenter
-                            }
+
+                        // 2. ICON (Locked to the Center of the Circle)
+                        ColoredIcon {
+                            id: navIcon
+                            source: "assets/icons/" + modelData.icon + ".svg"
+                            width: 55; height: 55
+                            anchors.centerIn: indicator // <--- KEY FIX: Align to circle, not parent
+                            color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                         }
+
+                        // 3. TEXT (Anchored below the Circle)
+                        Text {
+                            text: modelData.name
+                            color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
+                            font.family: themeManager.mainFont
+                            font.pixelSize: 10 // Keep small for footer
+                            font.weight: isActive ? Font.Bold : Font.Normal
+
+                            anchors.top: indicator.bottom
+                            anchors.topMargin: 0
+                            anchors.horizontalCenter: parent.horizontalCenter
+                        }
+
                         MouseArea { anchors.fill: parent; onClicked: viewPager.currentIndex = modelData.pageIndex }
                     }
                 }

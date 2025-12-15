@@ -25,11 +25,9 @@ Popup {
         }
         Column {
             Layout.alignment: Qt.AlignHCenter; spacing: 4
-            // FIXED SYNTAX: font.weight: Font.Bold
-            Text { text: "ABOUT:"; font.pixelSize: 12; font.weight: Font.Bold; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
-            // FIXED SYNTAX: font.weight: Font.ExtraBold
-            Text { text: "CHRONOMÉTRIS"; font.pixelSize: 24; font.weight: Font.ExtraBold; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "VERSION: 1.1"; font.pixelSize: 12; font.weight: Font.Bold; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "ABOUT:"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeSmall; font.weight: theme.fontWeightBold; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "CHRONOMÉTRIS"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH3; font.weight: theme.fontWeightExtraBold; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "VERSION: 1.1"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeSmall; font.weight: theme.fontWeightBold; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
         }
 
         Item { Layout.fillHeight: true }
@@ -40,13 +38,12 @@ Popup {
             color: "transparent"; border.color: "white"; border.width: 2; radius: 8
             RowLayout {
                 anchors.fill: parent; spacing: 0
-
                 // 12H Button
                 Rectangle {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     color: !theme.is24HourFormat ? "white" : "transparent"
                     radius: !theme.is24HourFormat ? 6 : 0
-                    Text { anchors.centerIn: parent; text: "12 Hours"; color: !theme.is24HourFormat ? accentColor : "white"; font.bold: true; font.pixelSize: 11; opacity: !theme.is24HourFormat?1:0.7 }
+                    Text { anchors.centerIn: parent; text: "12 Hours"; color: !theme.is24HourFormat ? accentColor : "white"; font.bold: true; font.pixelSize: theme.fontSizeSmall; opacity: !theme.is24HourFormat?1:0.7 }
                     MouseArea { anchors.fill: parent; onClicked: theme.is24HourFormat = false }
                 }
                 Rectangle { width: 1; height: 25; color: "white" }
@@ -55,24 +52,25 @@ Popup {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     color: theme.is24HourFormat ? "white" : "transparent"
                     radius: theme.is24HourFormat ? 6 : 0
-                    Text { anchors.centerIn: parent; text: "24 Hours"; color: theme.is24HourFormat ? accentColor : "white"; font.bold: true; font.pixelSize: 11; opacity: theme.is24HourFormat?1:0.7 }
+                    Text { anchors.centerIn: parent; text: "24 Hours"; color: theme.is24HourFormat ? accentColor : "white"; font.bold: true; font.pixelSize: theme.fontSizeSmall; opacity: theme.is24HourFormat?1:0.7 }
                     MouseArea { anchors.fill: parent; onClicked: theme.is24HourFormat = true }
                 }
                 Rectangle { width: 1; height: 25; color: "white" }
-                // Light/Dark
+                // Light
                 Rectangle {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     color: !theme.isDarkMode ? "white" : "transparent"
                     radius: !theme.isDarkMode ? 6 : 0
-                    Text { anchors.centerIn: parent; text: "Light"; color: !theme.isDarkMode ? accentColor : "white"; font.bold: true; font.pixelSize: 11; opacity: !theme.isDarkMode?1:0.7 }
+                    Text { anchors.centerIn: parent; text: "Light"; color: !theme.isDarkMode ? accentColor : "white"; font.bold: true; font.pixelSize: theme.fontSizeSmall; opacity: !theme.isDarkMode?1:0.7 }
                     MouseArea { anchors.fill: parent; onClicked: theme.isDarkMode = false }
                 }
                 Rectangle { width: 1; height: 25; color: "white" }
+                // Dark
                 Rectangle {
                     Layout.fillWidth: true; Layout.fillHeight: true
                     color: theme.isDarkMode ? "white" : "transparent"
                     radius: theme.isDarkMode ? 6 : 0
-                    Text { anchors.centerIn: parent; text: "Dark"; color: theme.isDarkMode ? accentColor : "white"; font.bold: true; font.pixelSize: 11; opacity: theme.isDarkMode?1:0.7 }
+                    Text { anchors.centerIn: parent; text: "Dark"; color: theme.isDarkMode ? accentColor : "white"; font.bold: true; font.pixelSize: theme.fontSizeSmall; opacity: theme.isDarkMode?1:0.7 }
                     MouseArea { anchors.fill: parent; onClicked: theme.isDarkMode = true }
                 }
             }

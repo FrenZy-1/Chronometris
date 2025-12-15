@@ -34,7 +34,7 @@ Flickable {
                         delegate: Column {
                             spacing: 4
                             // Dynamic Month Label
-                            Item { width: 14; height: 15; Text { text: index % 4 === 0 ? months[Math.floor(index/4)%12] : ""; font.pixelSize: 9; color: theme.textSecondary; anchors.centerIn: parent } }
+                            Item { width: 14; height: 15; Text { text: index % 4 === 0 ? months[Math.floor(index/4)%12] : ""; font.pixelSize: theme.fontSizeSmall; color: theme.textSecondary; anchors.centerIn: parent } }
                             Repeater { model: 7; Rectangle { width: 14; height: 14; radius: 2; property int intensity: Math.floor(Math.random() * 5); color: accentColor; opacity: intensity===0?0.1:(intensity*0.25) } }
                         }
                     }
@@ -45,7 +45,7 @@ Flickable {
         // BAR CHART
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
-            Text { text: "Weekly Hours:"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Weekly Hours:"; font.pixelSize: theme.fontSizeH3; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
             // INCREASED HEIGHT
             Item {
@@ -73,7 +73,7 @@ Flickable {
                                     anchors.bottom: parent.bottom; anchors.right: parent.right
                                 }
                             }
-                            Text { text: ["M","T","W","T","F","S","S"][index]; font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
+                            Text { text: ["M","T","W","T","F","S","S"][index]; font.pixelSize: theme.fontSizeSmall; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
                         }
                     }
                 }
@@ -83,7 +83,7 @@ Flickable {
         // PIE CHART (Canvas)
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
-            Text { text: "Distribution:"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Distribution:"; font.bold: true; font.pixelSize: theme.fontSizeH3; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
             Canvas {
                 width: 200; height: 200; Layout.alignment: Qt.AlignHCenter
@@ -107,7 +107,7 @@ Flickable {
         // LINE CHART (Canvas)
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
-            Text { text: "Focus Trend:"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Focus Trend:"; font.bold: true; font.pixelSize: theme.fontSizeH3; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
             Canvas {
                 width: 280; height: 120; Layout.alignment: Qt.AlignHCenter

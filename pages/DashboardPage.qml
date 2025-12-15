@@ -18,19 +18,19 @@ Flickable {
             visible: engine.currentState === "stopped" && !engine.isAlarmSoon
             Layout.alignment: Qt.AlignHCenter; Layout.margins: 20; Layout.topMargin: 40; spacing: 5
             ColoredIcon { source: "../assets/icons/timer.svg"; width: 80; height: 80; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "NO ACTIVE TIMER"; font.family: "Montserrat"; font.bold: true; font.pixelSize: theme.fontSizeH3; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "NO ACTIVE TIMER"; font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeH3; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
         }
 
         ColumnLayout {
             visible: engine.currentState !== "stopped"
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter
-            Text { text: "Running Timer:"; font.bold: true; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
-            Text { text: engine.currentType === "work" ? "WORK SESSION" : "BREAK"; font.pixelSize: theme.fontSizeH2; font.weight: Font.ExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Running Timer:"; font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: engine.currentType === "work" ? "WORK SESSION" : "BREAK"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             Item { width: 260; height: 260; Layout.alignment: Qt.AlignHCenter
                 TimerProgressCircle { anchors.centerIn: parent; circleSize: 240; progress: engine.progress; progressColor: accentColor }
                 Column { anchors.centerIn: parent
-                    Text { text: engine.timeRemainingString; font.pixelSize: 48; font.bold: true; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
-                    Text { text: engine.currentState; font.pixelSize: theme.fontSizeBody; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter; font.capitalization: Font.Capitalize }
+                    Text { text: engine.timeRemainingString; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH1; font.weight: theme.fontWeightBold; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { text: engine.currentState; font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter; font.capitalization: Font.Capitalize }
                 }
             }
             RowLayout {
@@ -42,25 +42,23 @@ Flickable {
             }
         }
 
-        // --- 2. DYNAMIC STATS ---
+        // --- 2. STATS ---
         Column {
             Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 10; spacing: 5
-            Text { text: "Today's Stats:"; font.family: "Montserrat"; font.pixelSize: theme.fontSizeH3; font.weight: Font.Bold; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "Total Focus: " + engine.todayFocusString; font.family: "Montserrat"; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "Sessions: " + engine.todaySessionCount; font.family: "Montserrat"; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
-
-            // STREAK RESTORED
+            Text { text: "Today's Stats:"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH3; font.weight: theme.fontWeightBold; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "Total Focus: " + engine.todayFocusString; font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "Sessions: " + engine.todaySessionCount; font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; anchors.horizontalCenter: parent.horizontalCenter }
             Row {
                 anchors.horizontalCenter: parent.horizontalCenter; spacing: 5
-                Text { text: "Current Streak:"; font.family: "Montserrat"; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary }
-                Text { text: engine.currentStreak + " Days"; font.family: "Montserrat"; font.pixelSize: theme.fontSizeBody; font.bold: true; color: accentColor }
+                Text { text: "Current Streak:"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary }
+                Text { text: engine.currentStreak + " Days"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody; font.bold: true; color: accentColor }
             }
         }
 
         // --- 3. HEATMAP ---
         ColumnLayout {
-            Layout.fillWidth: true; Layout.margins: 25; spacing: 10
-            Text { text: "Weekly Activity"; font.family: "Montserrat"; font.bold: true; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Layout.fillWidth: true; Layout.margins: 25; Layout.alignment: Qt.AlignHCenter; spacing: 10
+            Text { text: "Weekly Activity"; font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 12
                 Repeater {
@@ -68,7 +66,7 @@ Flickable {
                     Column {
                         spacing: 6
                         Rectangle { width: 30; height: 30; radius: 6; color: accentColor; opacity: 0.2 + (Math.random() * 0.8) }
-                        Text { text: modelData; anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: 10; color: theme.textSecondary }
+                        Text { text: modelData; font.family: theme.mainFont; anchors.horizontalCenter: parent.horizontalCenter; font.pixelSize: theme.fontSizeSmall; color: theme.textSecondary }
                     }
                 }
             }
