@@ -1,6 +1,7 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import QtQuick.Controls.Material // <--- ADDED THIS TO FIX ELEVATION ERROR
 import "components"
 import "pages"
 import "overlays"
@@ -16,12 +17,12 @@ ApplicationWindow {
     property alias appTheme: themeManager
     ThemeManager { id: themeManager }
 
-    // DYNAMIC COLOR LOGIC
-    // If stopped, use Sage Green (Idle). If running/paused, use the specific Cycle Color.
+    // Dynamic Color Engine
     property color currentAccentColor: {
         if (engine.currentState === "stopped") return appTheme.idleColor
         return appTheme.getTimerColor(engine.currentType, false)
     }
+    Behavior on currentAccentColor { ColorAnimation { duration: 300 } }
 
     // TOP HEADER
     Rectangle {
@@ -29,20 +30,21 @@ ApplicationWindow {
         anchors.top: parent.top
         width: parent.width
         height: 80
-        color: window.currentAccentColor // BINDING
+        color: window.currentAccentColor
         z: 100
-
-        Behavior on color { ColorAnimation { duration: 300 } } // Smooth transition
 
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: 10
             text: viewPager.currentItem ? viewPager.currentItem.title : "CHRONOMÉTRIS"
             color: "white"
-            font.family: "Montserrat"; font.pixelSize: 24; font.weight: Font.Bold
+            font.family: "Montserrat"
+            font.pixelSize: 24
+            font.weight: Font.Bold
             font.capitalization: Font.AllUppercase
         }
 
+        // Menu Icon
         Rectangle {
             width: 36; height: 36; radius: 10
             color: "transparent"; border.color: "white"; border.width: 1
@@ -57,85 +59,129 @@ ApplicationWindow {
     SwipeView {
         id: viewPager
         anchors.top: topHeader.bottom
-        anchors.bottom: bottomNav.top
+        anchors.bottom: parent.bottom
         anchors.left: parent.left
         anchors.right: parent.right
         clip: true
         interactive: true
 
-        DashboardPage { property string title: "DASHBOARD"; theme: window.appTheme }
-        TimerPage { property string title: "TIMERS"; theme: window.appTheme }
-        AlarmsPage { property string title: "ALARMS"; theme: window.appTheme }
-        AnalyticsPage { property string title: "ANALYTICS"; theme: window.appTheme }
+        // PASSING ACCENT COLOR (This works only if pages have the property!)
+        DashboardPage {
+            property string title: "DASHBOARD"
+            theme: window.appTheme
+            accentColor: window.currentAccentColor
+        }
+        TimerPage {
+            property string title: "TIMERS"
+            theme: window.appTheme
+            accentColor: window.currentAccentColor
+        }
+        AlarmsPage {
+            property string title: "ALARMS"
+            theme: window.appTheme
+            accentColor: window.currentAccentColor
+        }
+        AnalyticsPage {
+            property string title: "ANALYTICS"
+            theme: window.appTheme
+            accentColor: window.currentAccentColor
+        }
     }
 
-    // BOTTOM NAVIGATION BAR
-    Rectangle {
-        id: bottomNav
+    // FLOATING FOOTER
+    Item {
+        id: bottomContainer
+        width: parent.width * 0.9
+        height: 70
         anchors.bottom: parent.bottom
-        width: parent.width
-        height: 50
-        color: window.currentAccentColor // BINDING
+        anchors.bottomMargin: 30
+        anchors.horizontalCenter: parent.horizontalCenter
         z: 100
 
-        Behavior on color { ColorAnimation { duration: 300 } }
+        // Navigation Pill
+        Rectangle {
+            anchors.fill: parent
+            radius: height / 2
+            color: window.currentAccentColor
 
-        // Curved Top corners
-        radius: 30
-        Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 30; color: parent.color }
+            // Shadow using Material
+            layer.enabled: true
+            Material.elevation: 10
 
-        RowLayout {
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: -5
-            width: parent.width * 0.9
-            spacing: 0
+            RowLayout {
+                anchors.fill: parent
+                anchors.leftMargin: 20
+                anchors.rightMargin: 20
+                spacing: 0
 
-            Repeater {
-                model: [
-                    { name: "Dashboard", icon: "dashboard", pageIndex: 0 },
-                    { name: "Timer", icon: "timer", pageIndex: 1 },
-                    { name: "Alarms", icon: "alarm", pageIndex: 2 },
-                    { name: "Analytics", icon: "analytics", pageIndex: 3 }
-                ]
+                Repeater {
+                    model: [
+                        { name: "Dashboard", icon: "dashboard", pageIndex: 0 },
+                        { name: "Timer", icon: "timer", pageIndex: 1 },
+                        { name: "Alarms", icon: "alarm", pageIndex: 2 },
+                        { name: "Analytics", icon: "analytics", pageIndex: 3 }
+                    ]
 
-                delegate: Item {
-                    Layout.fillWidth: true; height: 50
-                    property bool isActive: viewPager.currentIndex === modelData.pageIndex
+                    delegate: Item {
+                        Layout.fillWidth: true; Layout.fillHeight: true
+                        property bool isActive: viewPager.currentIndex === modelData.pageIndex
 
-                    // Active Pill
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 60; height: 50; radius: 25
-                        color: "white"
-                        opacity: isActive ? 0.2 : 0
-                        Behavior on opacity { NumberAnimation { duration: 200 } }
-                    }
-
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 2
-
-                        // NEW COLORED ICON COMPONENT (White if active, Light White if inactive)
-                        ColoredIcon {
-                            source: "assets/icons/" + modelData.icon + ".svg"
-                            width: 24; height: 24
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            color: isActive ? "white" : "#CCFFFFFF" // High opacity white vs Medium opacity
-                        }
-
-                        Text {
-                            text: modelData.name
-                            font.family: "Montserrat"; font.pixelSize: 10
+                        // White Circle Indicator
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 45; height: 45; radius: 22.5
                             color: "white"
-                            font.weight: isActive ? Font.Bold : Font.Normal
-                            opacity: isActive ? 1.0 : 0.7
+                            opacity: isActive ? 0.2 : 0
+                            Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 0
+                            ColoredIcon {
+                                source: "assets/icons/" + modelData.icon + ".svg"
+                                width: 24; height: 24
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
+                            }
+                        }
+                        MouseArea { anchors.fill: parent; onClicked: viewPager.currentIndex = modelData.pageIndex }
                     }
-                    MouseArea { anchors.fill: parent; onClicked: viewPager.currentIndex = modelData.pageIndex }
                 }
+            }
+        }
+
+        // FAB (Add Button)
+        RoundButton {
+            id: fab
+            width: 50  // Explicit size
+            height: 50 // Explicit size ensures Item height doesn't drift
+
+            // Position: Docked to the right of the footer
+            anchors.right: parent.right
+            anchors.rightMargin: 10
+            anchors.verticalCenter: parent.top
+            anchors.verticalCenterOffset: -10
+
+            // Only show on Timer (1) and Alarm (2) pages
+            visible: viewPager.currentIndex === 1 || viewPager.currentIndex === 2
+            scale: visible ? 1.0 : 0.0
+            Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
+
+            // Visuals
+            color: "white"                       // White Background
+            iconColor: window.currentAccentColor // Green/Blue/Purple Icon
+            icon: "add"
+            text: ""                             // No label for FAB
+
+            onClicked: {
+                if (viewPager.currentIndex === 1) addTimerOverlay.open()
+                else if (viewPager.currentIndex === 2) addAlarmOverlay.open()
             }
         }
     }
 
-    AboutOverlay { id: aboutOverlay; theme: window.appTheme }
+    AboutOverlay { id: aboutOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
+    AddTimerOverlay { id: addTimerOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
+    AddAlarmOverlay { id: addAlarmOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
 }

@@ -1,4 +1,6 @@
 #include "TimerEngine.h"
+#include "DatabaseManager.h"
+#include <QSqlQuery>
 #include <QDebug>
 
 TimerEngine::TimerEngine(QObject *parent) : QObject(parent) {
@@ -11,8 +13,6 @@ TimerEngine::TimerEngine(QObject *parent) : QObject(parent) {
 
 void TimerEngine::setupQueue() {
     m_sessionQueue.clear();
-
-    // Standard Pomodoro Cycle (4 Works, 3 Short Breaks, 1 Long Break)
     // 1
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"shortBreak", 5 * 60});
@@ -28,10 +28,7 @@ void TimerEngine::setupQueue() {
 }
 
 QString TimerEngine::currentType() const {
-    // If stopped, we might want to show what's coming up, or "idle"
     if (m_sessionQueue.empty()) return "idle";
-
-    // If running/paused, return the actual type
     return m_sessionQueue.front().type;
 }
 
@@ -40,7 +37,7 @@ void TimerEngine::start() {
         m_state = "running";
         m_timer->start();
         emit currentStateChanged();
-        emit typeChanged(); // Ensure UI updates color
+        emit typeChanged();
     }
 }
 
@@ -62,7 +59,7 @@ void TimerEngine::stop() {
     }
     emit currentStateChanged();
     emit timeChanged();
-    emit typeChanged(); // Reset color to idle/next
+    emit typeChanged();
 }
 
 void TimerEngine::skip() {
@@ -85,7 +82,17 @@ void TimerEngine::completeSession() {
     emit currentStateChanged();
 
     if (!m_sessionQueue.empty()) {
-        m_historyStack.push(m_sessionQueue.front());
+        Session currentSession = m_sessionQueue.front();
+
+        // --- DATABASE SAVE ---
+        QSqlQuery query;
+        query.prepare("INSERT INTO sessions (cycle_type, duration_seconds) VALUES (:type, :duration)");
+        query.bindValue(":type", currentSession.type);
+        query.bindValue(":duration", currentSession.duration);
+        query.exec();
+        // ---------------------
+
+        m_historyStack.push(currentSession);
         m_sessionQueue.pop_front();
 
         if (m_sessionQueue.empty()) setupQueue();
@@ -97,8 +104,6 @@ void TimerEngine::completeSession() {
 
         emit typeChanged();
         emit timeChanged();
-
-        // Auto-start logic could go here
     }
 }
 

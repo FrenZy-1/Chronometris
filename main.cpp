@@ -1,6 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QQuickStyle> // <--- ADD THIS
 #include "src/DatabaseManager.h"
 #include "src/TimerEngine.h"
 
@@ -10,15 +11,15 @@ int main(int argc, char *argv[])
     app.setOrganizationName("Chronometris");
     app.setOrganizationDomain("chronometris.com");
 
+    // FIX WARNINGS: Force Material or Basic style to allow customization
+    QQuickStyle::setStyle("Basic");
+
     // Initialize Database
     DatabaseManager::instance().init();
 
-    // Create the Engine
     TimerEngine timerEngine;
 
     QQmlApplicationEngine engine;
-
-    // EXPOSE TO QML AS A GLOBAL PROPERTY "engine"
     engine.rootContext()->setContextProperty("engine", &timerEngine);
 
     const QUrl url(QStringLiteral("qrc:/Chronometris/Main.qml"));

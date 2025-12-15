@@ -4,36 +4,38 @@ import QtQuick.Controls.Material 2.15
 
 Item {
     id: root
-    width: 60
-    height: 85
+    // Default size, but allows overriding (e.g. width: 50 for FAB)
+    implicitWidth: 60
+    implicitHeight: width + 25
 
     property string icon: "play_arrow"
     property string text: "Start"
-    property color color: "#709775"
+    property color color: "#709775"       // Background Color
+    property color iconColor: "white"     // Icon Color (Default white)
+
     signal clicked()
 
     // The Button Circle
     Rectangle {
         id: buttonBg
-        width: 60
-        height: 60
-        radius: 30
+        width: root.width
+        height: root.width // Keep it circular
+        radius: width / 2
         color: root.color
         anchors.top: parent.top
         anchors.horizontalCenter: parent.horizontalCenter
 
-        // THIS FIXES THE ERROR: Use Material elevation instead of DropShadow
+        // Shadow
         layer.enabled: true
-        layer.effect: null // Clear any previous effects
         Material.elevation: 6
 
-        Image {
+        // Icon with Color Support
+        ColoredIcon {
             anchors.centerIn: parent
             source: "../assets/icons/" + root.icon + ".svg"
-            width: 24
-            height: 24
-            fillMode: Image.PreserveAspectFit
-            mipmap: true
+            width: parent.width * 0.4
+            height: parent.height * 0.4
+            color: root.iconColor
         }
 
         MouseArea {
@@ -41,8 +43,10 @@ Item {
             anchors.fill: parent
             onClicked: root.clicked()
             onPressed: {
-                label.opacity = 1
-                label.y = 65
+                if (root.text !== "") { // Only animate if text exists
+                    label.opacity = 1
+                    label.y = buttonBg.height + 5
+                }
             }
             onReleased: hideTimer.restart()
         }
@@ -54,11 +58,12 @@ Item {
         text: root.text
         font.family: "Montserrat"
         font.pixelSize: 12
-        font.weight: Font.Bold // Bold as requested
-        color: root.color      // Matches button color (e.g., Sage Green)
+        font.weight: Font.Bold
+        color: root.color // Text matches button background color usually
 
         anchors.horizontalCenter: parent.horizontalCenter
-        y: 45; opacity: 0; z: -1
+        y: buttonBg.height / 2 // Hidden start pos
+        opacity: 0; z: -1
 
         Behavior on y { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
         Behavior on opacity { NumberAnimation { duration: 200 } }
@@ -67,6 +72,6 @@ Item {
     Timer {
         id: hideTimer
         interval: 1000
-        onTriggered: { label.opacity = 0; label.y = 45 }
+        onTriggered: { label.opacity = 0; label.y = buttonBg.height / 2 }
     }
 }

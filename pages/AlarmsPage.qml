@@ -9,6 +9,7 @@ Flickable {
     contentWidth: width
 
     property var theme
+    property color accentColor
 
     ColumnLayout {
         id: content
@@ -30,93 +31,102 @@ Flickable {
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 15
-            RoundButton { icon: "hourglass_bottom"; text: "Snooze"; color: theme.idleColor }
-            RoundButton { icon: "close"; text: "Turn Off"; color: theme.idleColor }
-            RoundButton { icon: "skip_next"; text: "Skip"; color: theme.idleColor }
+            RoundButton { icon: "hourglass_bottom"; text: "Snooze"; color: accentColor }
+            RoundButton { icon: "close"; text: "Turn Off"; color: accentColor }
+            RoundButton { icon: "skip_next"; text: "Skip"; color: accentColor }
         }
+
+        // Separator
+        Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }
 
         // Separator
         Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }
 
         // Upcoming
         ColumnLayout {
-            Layout.fillWidth: true;
-            Layout.margins: 20;
-            spacing: 10
+            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
 
             // Upcoming Header
-            RowLayout {
-                width: parent.width
-                Text { text: "Upcoming:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
-                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            Rectangle {
+                Layout.fillWidth: true; height: 40; color: accentColor; radius: 5
+                RowLayout {
+                    anchors.fill: parent; anchors.margins: 10
+                    Text { text: "Upcoming"; font.family: "Montserrat"; font.bold: true; color: "white"; Layout.fillWidth: true }
+                    Text { text: "(3)"; color: "white"; font.pixelSize: 12 }
+                }
             }
 
-            // Mock List
+            // Mock List Items
             Repeater {
-                model: 8
+                model: 3
                 Rectangle {
-                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    Layout.fillWidth: true; height: 40; color: "white"; radius: 5; border.color: "#E0E0E0"
                     RowLayout {
-                        anchors.fill: parent
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                        anchors.fill: parent; anchors.margins: 10
+                        Text { text: "Work Session"; font.family: "Montserrat"; Layout.fillWidth: true }
+                        Text { text: "25:00"; font.family: "Montserrat"; color: theme.textSecondary }
                     }
                 }
             }
         }
+
+        // Separator
+        Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }
 
         // Snoozed
         ColumnLayout {
-            Layout.fillWidth: true;
-            Layout.margins: 20;
-            spacing: 10
+            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
 
             // Upcoming Header
-            RowLayout {
-                width: parent.width
-                Text { text: "Snoozed:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
-                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            Rectangle {
+                Layout.fillWidth: true; height: 40; color: accentColor; radius: 5
+                RowLayout {
+                    anchors.fill: parent; anchors.margins: 10
+                    Text { text: "Snoozed"; font.family: "Montserrat"; font.bold: true; color: "white"; Layout.fillWidth: true }
+                    Text { text: "(3)"; color: "white"; font.pixelSize: 12 }
+                }
             }
 
-            // Mock List
+            // Mock List Items
             Repeater {
-                model: 8
+                model: 3
                 Rectangle {
-                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    Layout.fillWidth: true; height: 40; color: "white"; radius: 5; border.color: "#E0E0E0"
                     RowLayout {
-                        anchors.fill: parent
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                        anchors.fill: parent; anchors.margins: 10
+                        Text { text: "Work Session"; font.family: "Montserrat"; Layout.fillWidth: true }
+                        Text { text: "25:00"; font.family: "Montserrat"; color: theme.textSecondary }
                     }
                 }
             }
         }
 
+        // Separator
+        Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }
+
         // Turned off
         ColumnLayout {
-            Layout.fillWidth: true;
-            Layout.margins: 20;
-            spacing: 10
+            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
 
             // Upcoming Header
-            RowLayout {
-                width: parent.width
-                Text { text: "Turned Off:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
-                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            Rectangle {
+                Layout.fillWidth: true; height: 40; color: accentColor; radius: 5
+                RowLayout {
+                    anchors.fill: parent; anchors.margins: 10
+                    Text { text: "Turned Off"; font.family: "Montserrat"; font.bold: true; color: "white"; Layout.fillWidth: true }
+                    Text { text: "(3)"; color: "white"; font.pixelSize: 12 }
+                }
             }
 
-            // Mock List
+            // Mock List Items
             Repeater {
-                model: 8
+                model: 3
                 Rectangle {
-                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    Layout.fillWidth: true; height: 40; color: "white"; radius: 5; border.color: "#E0E0E0"
                     RowLayout {
-                        anchors.fill: parent
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
-                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                        anchors.fill: parent; anchors.margins: 10
+                        Text { text: "Work Session"; font.family: "Montserrat"; Layout.fillWidth: true }
+                        Text { text: "25:00"; font.family: "Montserrat"; color: theme.textSecondary }
                     }
                 }
             }

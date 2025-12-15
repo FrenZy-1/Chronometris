@@ -5,7 +5,7 @@ project(Chronometris VERSION 1.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Quick Sql REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Quick Sql QuickControls2 REQUIRED)
 
 qt_standard_project_setup()
 
@@ -23,16 +23,9 @@ qt_add_qml_module(appChronometris
     QML_FILES
         Main.qml
 
-        # components/Chart.qml
-        # components/Heatmap.qml
         components/RoundButton.qml
-        # components/Table.qml
         components/ThemeManager.qml
-        # components/TimerList.qml
-        # components/TimerManager.qml
         components/TimerProgressCircle.qml
-        # components/TopBar.qml
-        # components/SvgIcon.qml
         components/ColoredIcon.qml
 
         pages/AlarmsPage.qml
@@ -73,4 +66,4 @@ qt_add_qml_module(appChronometris
         QML_FILES components/ColoredIcon.qml
 )
 
-target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql)
+target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql Qt6::QuickControls2)

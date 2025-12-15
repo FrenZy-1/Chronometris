@@ -12,17 +12,17 @@ Popup {
     background: Item {} // Transparent
 
     property var theme
+    property color accentColor
 
     Rectangle {
         anchors.fill: parent
         radius: 20
-        color: theme.idleColor
+        color: accentColor
         border.width: 4; border.color: "white"
 
         ColumnLayout {
             anchors.fill: parent; anchors.margins: 20; spacing: 10
 
-            // Title
             Text { Layout.alignment: Qt.AlignHCenter; text: "ADD TIMER"; font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white" }
             Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
