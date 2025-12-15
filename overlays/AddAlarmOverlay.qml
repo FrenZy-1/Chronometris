@@ -12,13 +12,10 @@ Popup {
     background: Item {}
 
     property var theme
-    property color accentColor // <--- Dynamic Color
+    property color accentColor
 
     Rectangle {
-        anchors.fill: parent
-        radius: 20
-        color: accentColor // <--- Uses Dynamic Color
-        border.width: 4; border.color: "white"
+        anchors.fill: parent; radius: 20; color: accentColor; border.width: 4; border.color: "white"
 
         ColumnLayout {
             anchors.fill: parent; anchors.margins: 20; spacing: 12
@@ -26,31 +23,31 @@ Popup {
             Text { Layout.alignment: Qt.AlignHCenter; text: "ADD ALARM"; font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white" }
             Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
-            // Fields
             ColumnLayout {
                 Layout.fillWidth: true; spacing: 8
-                RowLayout { Text { text: "Name:"; color: "white"; font.bold: true; Layout.preferredWidth: 80 } TextField { Layout.fillWidth: true; placeholderText: "Alarm name"; background: Rectangle { radius: 5; color: "#E9E9E9" } } }
+                RowLayout { Text { text: "Name:"; color: "white"; font.bold: true; Layout.preferredWidth: 80 } TextField { id: aName; Layout.fillWidth: true; placeholderText: "Alarm name"; background: Rectangle { radius: 5; color: "#E9E9E9" } } }
                 RowLayout { Text { text: "Desc:"; color: "white"; font.bold: true; Layout.preferredWidth: 80 } TextField { Layout.fillWidth: true; placeholderText: "Description"; background: Rectangle { radius: 5; color: "#E9E9E9" } } }
             }
 
-            // Big Time Picker
+            // Time Picker
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 10
-                Rectangle { width: 80; height: 90; radius: 8; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "AM"; font.pixelSize: 32; font.family: "Montserrat" } }
-                Rectangle { width: 80; height: 90; radius: 8; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "07"; font.pixelSize: 48; font.family: "Montserrat" } }
-                Rectangle { width: 80; height: 90; radius: 8; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "30"; font.pixelSize: 48; font.family: "Montserrat" } }
+                Rectangle { width: 80; height: 90; radius: 8; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "AM"; font.pixelSize: 32 } }
+                Rectangle { width: 80; height: 90; radius: 8; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "07"; font.pixelSize: 48 } }
+                Rectangle { width: 80; height: 90; radius: 8; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "30"; font.pixelSize: 48 } }
             }
 
-            // Date & Repeat
-            TextField { Layout.fillWidth: true; placeholderText: "Date Picker"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
-
+            // Repeat Toggle (Double Button)
             RowLayout {
                 Text { text: "Repeat?"; color: "white"; font.bold: true }
                 Item { Layout.fillWidth: true }
-                Rectangle { width: 120; height: 30; color: "#E9E9E9"; radius: 5; Row { anchors.centerIn: parent; spacing: 10; Text { text: "Daily"; color: accentColor; font.bold: true } Text { text: "Custom"; color: "#999" } } }
+                Row {
+                    Rectangle { width: 70; height: 30; color: "white"; radius: 4; Text { anchors.centerIn: parent; text: "Daily"; color: accentColor; font.bold: true } }
+                    Rectangle { width: 70; height: 30; color: "transparent"; border.color: "white"; radius: 4; Text { anchors.centerIn: parent; text: "Custom"; color: "white" } }
+                }
             }
 
-            // Weekdays
+            // Days
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 5
                 Repeater {
@@ -59,27 +56,26 @@ Popup {
                 }
             }
 
-            // BOTTOM BUTTONS (Standardized Circular Style)
+            // Action Buttons (Delete added)
             Item { Layout.fillHeight: true }
             RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 30
+                Layout.fillWidth: true
+                // DELETE BUTTON
+                Rectangle { width: 40; height: 40; radius: 20; color: "#FF6B6B"; Text { anchors.centerIn: parent; text: "🗑"; color: "white" } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
 
-                // Cancel (X)
-                Rectangle {
-                    width: 50; height: 50; radius: 25; color: "#E9E9E9"
-                    Text { anchors.centerIn: parent; text: "✕"; font.pixelSize: 20; color: "#797979" }
-                    MouseArea { anchors.fill: parent; onClicked: popup.close() }
-                }
+                Item { Layout.fillWidth: true }
 
-                // Save (Check)
-                Rectangle {
-                    width: 50; height: 50; radius: 25; color: "#E9E9E9"
-                    Text { anchors.centerIn: parent; text: "✓"; font.pixelSize: 24; color: accentColor; font.bold: true }
-                    MouseArea { anchors.fill: parent; onClicked: { console.log("Alarm Saved"); popup.close() } }
+                Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✕"; font.pixelSize: 20; color: "#797979" } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
+                Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✓"; font.pixelSize: 24; color: accentColor; font.bold: true }
+                    MouseArea {
+                        anchors.fill: parent;
+                        onClicked: {
+                            engine.addAlarm({name: aName.text, time: "07:30", days: "Daily"});
+                            popup.close();
+                        }
+                    }
                 }
             }
-            // Add a small spacer at bottom
             Item { height: 10 }
         }
     }

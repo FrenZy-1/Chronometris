@@ -3,20 +3,31 @@
 
 #include <QObject>
 #include <QSqlDatabase>
+#include <QVariantMap>
+#include <QList>
 
 class DatabaseManager : public QObject {
     Q_OBJECT
 public:
-    // Singleton Accessor
     static DatabaseManager& instance();
-
-    // Initialization
     void init();
+
+    // Commands
+    void addSession(const QString& type, int duration);
+    void addTimer(const QVariantMap& data);
+    void addAlarm(const QVariantMap& data);
+
+    // Queries
+    QList<int> getWeeklyHours(); // Returns 7 values (M-S) for bar chart
+    QList<int> getSessionDistribution(); // Returns 3 values (Work, Break, Long)
+    QVariantList getHeatmapData(); // Returns 70 values for heatmap
+
+    // Debug
+    void generateDummyData();
 
 private:
     explicit DatabaseManager(QObject *parent = nullptr);
     ~DatabaseManager();
-
     QSqlDatabase m_db;
     void createTables();
 };

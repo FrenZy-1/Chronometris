@@ -1,28 +1,23 @@
 #include "TimerEngine.h"
 #include "DatabaseManager.h"
-#include <QSqlQuery>
 #include <QDebug>
 
 TimerEngine::TimerEngine(QObject *parent) : QObject(parent) {
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
     connect(m_timer, &QTimer::timeout, this, &TimerEngine::processTimer);
-
     setupQueue();
 }
 
 void TimerEngine::setupQueue() {
     m_sessionQueue.clear();
-    // 1
+    // Standard Pomodoro: Work x4, Break x3, Long Break x1
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"shortBreak", 5 * 60});
-    // 2
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"shortBreak", 5 * 60});
-    // 3
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"shortBreak", 5 * 60});
-    // 4
     m_sessionQueue.push_back({"work", 25 * 60});
     m_sessionQueue.push_back({"longBreak", 15 * 60});
 }
@@ -82,20 +77,17 @@ void TimerEngine::completeSession() {
     emit currentStateChanged();
 
     if (!m_sessionQueue.empty()) {
-        Session currentSession = m_sessionQueue.front();
+        Session current = m_sessionQueue.front();
 
-        // --- DATABASE SAVE ---
-        QSqlQuery query;
-        query.prepare("INSERT INTO sessions (cycle_type, duration_seconds) VALUES (:type, :duration)");
-        query.bindValue(":type", currentSession.type);
-        query.bindValue(":duration", currentSession.duration);
-        query.exec();
-        // ---------------------
+        // Save to DB
+        DatabaseManager::instance().addSession(current.type, current.duration);
+        emit analyticsChanged(); // Notify UI to update charts
 
-        m_historyStack.push(currentSession);
+        // DSA: Move to History Stack
+        m_historyStack.push(current);
         m_sessionQueue.pop_front();
 
-        if (m_sessionQueue.empty()) setupQueue();
+        if (m_sessionQueue.empty()) setupQueue(); // Loop
 
         Session next = m_sessionQueue.front();
         m_remaining = next.duration;
@@ -107,11 +99,23 @@ void TimerEngine::completeSession() {
     }
 }
 
-void TimerEngine::undoLastSession() {
-    if (!m_historyStack.isEmpty()) {
-        Session last = m_historyStack.pop();
-        m_sessionQueue.push_front(last);
-        stop();
-        emit typeChanged();
-    }
+// QML Invokables
+void TimerEngine::addTimer(const QVariantMap& data) {
+    DatabaseManager::instance().addTimer(data);
+    qDebug() << "Timer added:" << data;
 }
+
+void TimerEngine::addAlarm(const QVariantMap& data) {
+    DatabaseManager::instance().addAlarm(data);
+    qDebug() << "Alarm added:" << data;
+}
+
+void TimerEngine::generateDummyData() {
+    DatabaseManager::instance().generateDummyData();
+    emit analyticsChanged();
+}
+
+// Analytics Data Providers
+QList<int> TimerEngine::chartData() { return DatabaseManager::instance().getWeeklyHours(); }
+QList<int> TimerEngine::pieData() { return DatabaseManager::instance().getSessionDistribution(); }
+QVariantList TimerEngine::heatmapData() { return DatabaseManager::instance().getHeatmapData(); }

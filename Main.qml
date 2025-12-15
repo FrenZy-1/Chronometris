@@ -137,14 +137,26 @@ ApplicationWindow {
 
                         Column {
                             anchors.centerIn: parent
-                            spacing: 0
+                            spacing: 2 // Tiny space between icon and text
+
                             ColoredIcon {
                                 source: "assets/icons/" + modelData.icon + ".svg"
-                                width: 24; height: 24
+                                width: 40; height: 40
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                             }
+
+                            // RESTORED LABELS
+                            Text {
+                                text: modelData.name
+                                color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
+                                font.family: "Montserrat"
+                                font.pixelSize: 9
+                                font.weight: isActive ? Font.Bold : Font.Normal
+                                anchors.horizontalCenter: parent.horizontalCenter
+                            }
                         }
+
                         MouseArea { anchors.fill: parent; onClicked: viewPager.currentIndex = modelData.pageIndex }
                     }
                 }

@@ -18,13 +18,16 @@ Flickable {
 
         // Active Alarm
         Column {
-            Layout.alignment: Qt.AlignHCenter
-            spacing: 5
-            Layout.topMargin: 20
+            Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 30; spacing: 5
             Text { text: "Upcoming Alarm:"; font.pixelSize: 14; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "ALARM NAME"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "Description..."; font.pixelSize: 16; font.family: "Montserrat"; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
-            Text { text: "12:15 PM"; font.pixelSize: 32; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Normal; anchors.horizontalCenter: parent.horizontalCenter }
+            Text { text: "DAILY STANDUP"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; anchors.horizontalCenter: parent.horizontalCenter }
+
+            // DYNAMIC TIME FORMAT
+            Text {
+                // Hardcoded 12:15 example, but using the formatter logic
+                text: theme.formatTime(12, 15)
+                font.pixelSize: 32; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Normal; anchors.horizontalCenter: parent.horizontalCenter
+            }
         }
 
         // Controls
@@ -35,9 +38,6 @@ Flickable {
             RoundButton { icon: "close"; text: "Turn Off"; color: accentColor }
             RoundButton { icon: "skip_next"; text: "Skip"; color: accentColor }
         }
-
-        // Separator
-        Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }
 
         // Separator
         Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }

@@ -5,6 +5,7 @@ QtObject {
 
     // Toggle this to switch themes
     property bool isDarkMode: false
+    property bool is24HourFormat: false
 
     // Colors derived from your tokens
     readonly property color mainBackgroundColor: isDarkMode ? "#3E3E42" : "#E9E9E9"
@@ -37,6 +38,18 @@ QtObject {
             case "shortBreak": return isStroke ? shortBreakStroke : shortBreakFill
             case "longBreak": return isStroke ? longBreakStroke : longBreakFill
             default: return idleColor
+        }
+    }
+
+    // NEW: Time Formatter
+    function formatTime(hour, minute) {
+        if (is24HourFormat) {
+            return (hour < 10 ? "0"+hour : hour) + ":" + (minute < 10 ? "0"+minute : minute)
+        } else {
+            var ampm = hour >= 12 ? "PM" : "AM"
+            var h = hour % 12
+            h = h ? h : 12 // the hour '0' should be '12'
+            return h + ":" + (minute < 10 ? "0"+minute : minute) + " " + ampm
         }
     }
 }

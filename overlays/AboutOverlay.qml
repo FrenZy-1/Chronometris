@@ -44,13 +44,24 @@ Popup {
             RowLayout {
                 anchors.fill: parent; spacing: 0
 
-                // 12H / 24H (Visual toggle only for now)
-                Rectangle { Layout.fillWidth: true; Layout.fillHeight: true; color: "white"; radius: 6;
-                    Text { anchors.centerIn: parent; text: "12 Hours"; color: accentColor; font.family: "Montserrat"; font.bold: true; font.pixelSize: 11 }
+                // 12 Hours Button
+                Rectangle {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    color: !theme.is24HourFormat ? "white" : "transparent"
+                    radius: !theme.is24HourFormat ? 6 : 0
+                    Text { anchors.centerIn: parent; text: "12 Hours"; color: !theme.is24HourFormat ? accentColor : "white"; font.bold: true; font.pixelSize: 11; opacity: !theme.is24HourFormat ? 1.0 : 0.7 }
+                    MouseArea { anchors.fill: parent; onClicked: theme.is24HourFormat = false }
                 }
+
                 Rectangle { width: 1; height: 25; color: "white" }
-                Rectangle { Layout.fillWidth: true; Layout.fillHeight: true; color: "transparent";
-                    Text { anchors.centerIn: parent; text: "24 Hours"; color: "white"; font.bold: true; font.pixelSize: 11; opacity: 0.7 }
+
+                // 24 Hours Button
+                Rectangle {
+                    Layout.fillWidth: true; Layout.fillHeight: true
+                    color: theme.is24HourFormat ? "white" : "transparent"
+                    radius: theme.is24HourFormat ? 6 : 0
+                    Text { anchors.centerIn: parent; text: "24 Hours"; color: theme.is24HourFormat ? accentColor : "white"; font.bold: true; font.pixelSize: 11; opacity: theme.is24HourFormat ? 1.0 : 0.7 }
+                    MouseArea { anchors.fill: parent; onClicked: theme.is24HourFormat = true }
                 }
 
                 Rectangle { width: 1; height: 25; color: "white" }
