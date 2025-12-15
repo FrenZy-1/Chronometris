@@ -15,21 +15,11 @@ Flickable {
         width: parent.width
         spacing: 10
 
-        // // Header
-        // Rectangle {
-        //     Layout.fillWidth: true
-        //     height: 60
-        //     color: theme.idleColor
-        //     Text {
-        //         anchors.centerIn: parent; text: "ALARMS"; font.family: "Montserrat"; font.pixelSize: 24; font.weight: Font.Bold; color: "white"
-        //     }
-        // }
-
         // Active Alarm
         Column {
             Layout.alignment: Qt.AlignHCenter
             spacing: 5
-            Layout.topMargin: 0
+            Layout.topMargin: 20
             Text { text: "Upcoming Alarm:"; font.pixelSize: 14; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: "ALARM NAME"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: "Description..."; font.pixelSize: 16; font.family: "Montserrat"; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
@@ -48,14 +38,72 @@ Flickable {
         // Separator
         Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20 }
 
-        // Lists
+        // Upcoming
         ColumnLayout {
-            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
+            Layout.fillWidth: true;
+            Layout.margins: 20;
+            spacing: 10
 
             // Upcoming Header
             RowLayout {
                 width: parent.width
                 Text { text: "Upcoming:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
+                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            }
+
+            // Mock List
+            Repeater {
+                model: 8
+                Rectangle {
+                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    RowLayout {
+                        anchors.fill: parent
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                    }
+                }
+            }
+        }
+
+        // Snoozed
+        ColumnLayout {
+            Layout.fillWidth: true;
+            Layout.margins: 20;
+            spacing: 10
+
+            // Upcoming Header
+            RowLayout {
+                width: parent.width
+                Text { text: "Snoozed:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
+                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            }
+
+            // Mock List
+            Repeater {
+                model: 8
+                Rectangle {
+                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    RowLayout {
+                        anchors.fill: parent
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                    }
+                }
+            }
+        }
+
+        // Turned off
+        ColumnLayout {
+            Layout.fillWidth: true;
+            Layout.margins: 20;
+            spacing: 10
+
+            // Upcoming Header
+            RowLayout {
+                width: parent.width
+                Text { text: "Turned Off:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
                 Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
             }
 

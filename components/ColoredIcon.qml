@@ -1,36 +1,35 @@
 import QtQuick 2.15
+import QtQuick.Controls 2.15
 
-Item {
+Button {
     id: root
-    property string source
+
+    // API matching your usage
+    property string source: ""
     property color color: "black"
 
-    implicitWidth: 24
-    implicitHeight: 24
+    // Disable interaction (it's just an icon)
+    enabled: false
+    flat: true
 
-    Image {
-        id: img
-        source: root.source
-        anchors.fill: parent
-        fillMode: Image.PreserveAspectFit
-        visible: false // Hide the original black image
-        mipmap: true   // Smooth scaling
-    }
+    // Map properties to the Button's icon group
+    icon.source: root.source
+    icon.color: root.color
+    icon.width: width
+    icon.height: height
 
-    ShaderEffect {
-        anchors.fill: parent
-        property variant src: img
-        property color clr: root.color
+    // Remove all background/borders
+    background: Item {}
 
-        // Simple fragment shader to colorize the non-transparent pixels
-        fragmentShader: "
-            varying highp vec2 qt_TexCoord0;
-            uniform sampler2D src;
-            uniform lowp vec4 clr;
-            uniform lowp float qt_Opacity;
-            void main() {
-                lowp vec4 tex = texture2D(src, qt_TexCoord0);
-                gl_FragColor = vec4(clr.rgb, tex.a * qt_Opacity);
-            }"
+    // Ensure no text padding affects the size
+    padding: 0
+    topPadding: 0
+    bottomPadding: 0
+    leftPadding: 0
+    rightPadding: 0
+
+    // Force the icon to fill the item
+    contentItem: Item {
+        // The Button renders the icon internally, we just hide the label
     }
 }

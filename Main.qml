@@ -90,74 +90,97 @@ ApplicationWindow {
 
     // BOTTOM NAVIGATION BAR
     Rectangle {
-        id: bottomNav
-        anchors.bottom: parent.bottom
-        width: parent.width
-        height: 90
-        color: appTheme.mainBackgroundColor
-        z: 100
+            id: bottomNav
+            anchors.bottom: parent.bottom
+            width: parent.width
+            height: 100
+            color: appTheme.idleColor // 1. Restore Footer Green Color
 
-        RowLayout {
-            anchors.centerIn: parent
-            anchors.verticalCenterOffset: -10
-            width: parent.width * 0.9
-            spacing: 0
+            // Top corners rounded
+            radius: 30
+            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 30; color: appTheme.idleColor }
 
-            Repeater {
-                model: [
-                    { name: "Dashboard", icon: "dashboard", pageIndex: 0 },
-                    { name: "Timer", icon: "timer", pageIndex: 1 },
-                    { name: "Alarms", icon: "alarm", pageIndex: 2 },
-                    { name: "Analytics", icon: "analytics", pageIndex: 3 }
-                ]
+            RowLayout {
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: -5
+                width: parent.width * 0.9
+                spacing: 0
 
-                delegate: Item {
-                    Layout.fillWidth: true
-                    height: 50
+                Repeater {
+                    model: [
+                        { name: "Dashboard", icon: "dashboard", pageIndex: 0 },
+                        { name: "Timer", icon: "timer", pageIndex: 1 },
+                        { name: "Alarms", icon: "alarm", pageIndex: 2 },
+                        { name: "Analytics", icon: "analytics", pageIndex: 3 }
+                    ]
 
-                    property bool isActive: viewPager.currentIndex === modelData.pageIndex
+                    delegate: Item {
+                        Layout.fillWidth: true
+                        height: 50
 
-                    // Active Background Pill
-                    Rectangle {
-                        anchors.centerIn: parent
-                        width: 60; height: 50; radius: 25
-                        color: appTheme.idleColor
-                        opacity: isActive ? 1.0 : 0.0
-                        Behavior on opacity { NumberAnimation { duration: 200 } }
-                    }
+                        property bool isActive: viewPager.currentIndex === modelData.pageIndex
 
-                    Column {
-                        anchors.centerIn: parent
-                        spacing: 2
-
-                        // REPLACED: Use ColoredIcon to fix black icons
-                        ColoredIcon {
-                            source: "assets/icons/" + modelData.icon + ".svg"
-                            width: 24
-                            height: 24
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            // White if active, Green if inactive
-                            color: isActive ? "white" : appTheme.idleColor
+                        // Active Pill (White when active)
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 60; height: 50; radius: 25
+                            color: "white"
+                            opacity: isActive ? 0.2 : 0 // Subtle highlight
+                            Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
 
-                        Text {
-                            text: modelData.name
-                            font.family: "Montserrat"
-                            font.pixelSize: 10
-                            color: isActive ? "white" : appTheme.idleColor
-                            font.weight: isActive ? Font.Bold : Font.Normal
-                            opacity: isActive ? 1.0 : 0.0
-                        }
-                    }
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 4
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: viewPager.currentIndex = modelData.pageIndex
+                            // ICON FIX: Use native Image, colorize via a simple property change if possible
+                            // Since SVGs are black, we can't easily make them white without a shader.
+                            // We will use the 'ColoredIcon' again but simpler.
+
+                            Image {
+                                source: "assets/icons/" + modelData.icon + ".svg"
+                                width: 24; height: 24
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                visible: false // Hidden source
+                                id: srcIcon
+                            }
+
+                            // The Colorize Effect
+                            ShaderEffect {
+                                width: 24; height: 24
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                property variant src: srcIcon
+                                property color clr: isActive ? "white" : Qt.rgba(1,1,1,0.6) // White vs Dim White
+
+                                fragmentShader: "
+                                    varying highp vec2 qt_TexCoord0;
+                                    uniform sampler2D src;
+                                    uniform lowp vec4 clr;
+                                    uniform lowp float qt_Opacity;
+                                    void main() {
+                                        lowp vec4 tex = texture2D(src, qt_TexCoord0);
+                                        gl_FragColor = vec4(clr.rgb, tex.a * qt_Opacity);
+                                    }"
+                            }
+
+                            Text {
+                                text: modelData.name
+                                font.family: "Montserrat"
+                                font.pixelSize: 10
+                                color: "white"
+                                font.weight: isActive ? Font.Bold : Font.Normal
+                                opacity: isActive ? 1.0 : 0.6
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: viewPager.currentIndex = modelData.pageIndex
+                        }
                     }
                 }
             }
         }
-    }
 
     AboutOverlay { id: aboutOverlay; theme: window.appTheme }
 }

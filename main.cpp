@@ -13,10 +13,13 @@ int main(int argc, char *argv[])
     // Initialize Database
     DatabaseManager::instance().init();
 
+    // Create the Engine
+    TimerEngine timerEngine;
+
     QQmlApplicationEngine engine;
 
-    // Register C++ Types to QML
-    qmlRegisterType<TimerEngine>("Chronometris.Core", 1, 0, "TimerEngine");
+    // EXPOSE TO QML AS A GLOBAL PROPERTY "engine"
+    engine.rootContext()->setContextProperty("engine", &timerEngine);
 
     const QUrl url(QStringLiteral("qrc:/Chronometris/Main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

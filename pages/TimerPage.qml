@@ -20,33 +20,13 @@ Flickable {
         Column {
             Layout.alignment: Qt.AlignHCenter
             spacing: 5
-            Layout.topMargin: 20 // Adjust this if you want it closer to header
-
-            Text {
-                text: "Running Timer:";
-                font.pixelSize: 14;
-                font.family: "Montserrat";
-                color: theme.textPrimary;
-                font.weight: Font.Bold;
-                anchors.horizontalCenter: parent.horizontalCenter }
-
-            // Menu Icon placeholder
-            Rectangle {
-                width: 30; height: 30; radius: 5
-                border.color: "white"
-                color: "transparent"
-                anchors.right: parent.right
-                anchors.rightMargin: 16
-                anchors.verticalCenter: parent.verticalCenter
-                Text { anchors.centerIn: parent; text: ":"; color: "white" }
-            }
+            Layout.topMargin: 10 // Adjust this if you want it closer to header
         }
 
         // Running Timer Section
         Column {
             Layout.alignment: Qt.AlignHCenter
             spacing: 5
-            Layout.topMargin: 0
 
             Text { text: "Running Timer:"; font.pixelSize: 14; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: "TIMER NAME"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; anchors.horizontalCenter: parent.horizontalCenter }
@@ -88,16 +68,24 @@ Flickable {
             }
         }
 
-        // Upcoming List
+        // Upcoming
         ColumnLayout {
-            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
+            Layout.fillWidth: true;
+            Layout.margins: 20;
+            spacing: 10
 
-            Loader { sourceComponent: sectionHeader; property string sectionName: "Upcoming:" }
+            // Upcoming Header
+            RowLayout {
+                width: parent.width
+                Text { text: "Upcoming:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
+                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            }
 
+            // Mock List
             Repeater {
-                model: 5
+                model: 8
                 Rectangle {
-                    Layout.fillWidth: true; height: 30; color: "transparent"
+                    Layout.fillWidth: true; height: 25; color: "transparent"
                     RowLayout {
                         anchors.fill: parent
                         Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
@@ -108,11 +96,60 @@ Flickable {
             }
         }
 
-        // Paused List
+        // Paused
         ColumnLayout {
-            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
-            Loader { sourceComponent: sectionHeader; property string sectionName: "Paused:" }
-            // ... Similar repeater ...
+            Layout.fillWidth: true;
+            Layout.margins: 20;
+            spacing: 10
+
+            // Upcoming Header
+            RowLayout {
+                width: parent.width
+                Text { text: "Paused:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
+                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            }
+
+            // Mock List
+            Repeater {
+                model: 8
+                Rectangle {
+                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    RowLayout {
+                        anchors.fill: parent
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                    }
+                }
+            }
+        }
+
+        // Completed
+        ColumnLayout {
+            Layout.fillWidth: true;
+            Layout.margins: 20;
+            spacing: 10
+
+            // Upcoming Header
+            RowLayout {
+                width: parent.width
+                Text { text: "Completed:"; font.family: "Montserrat"; font.pixelSize: 20; font.weight: Font.Bold; color: theme.textPrimary; Layout.fillWidth: true }
+                Rectangle { color: "transparent"; border.color: theme.borderColor; radius: 4; width: 60; height: 24; Text { text: "Rows: --"; anchors.centerIn: parent; font.pixelSize: 10 } }
+            }
+
+            // Mock List
+            Repeater {
+                model: 8
+                Rectangle {
+                    Layout.fillWidth: true; height: 25; color: "transparent"
+                    RowLayout {
+                        anchors.fill: parent
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; Layout.preferredWidth: 60 }
+                        Text { text: "Default"; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold }
+                    }
+                }
+            }
         }
     }
 }
