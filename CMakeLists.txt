@@ -5,7 +5,7 @@ project(Chronometris VERSION 1.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Quick Sql QuickControls2 REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Quick Sql QuickControls2 QuickDialogs2 REQUIRED)
 
 qt_standard_project_setup()
 
@@ -27,6 +27,7 @@ qt_add_qml_module(appChronometris
         components/ThemeManager.qml
         components/TimerProgressCircle.qml
         components/ColoredIcon.qml
+        components/TimePicker.qml
 
         pages/AlarmsPage.qml
         pages/AnalyticsPage.qml
@@ -64,6 +65,7 @@ qt_add_qml_module(appChronometris
 
         assets/logo/Logo.png
         QML_FILES components/ColoredIcon.qml
+        QML_FILES components/TimePIcker.qml
 )
 
-target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql Qt6::QuickControls2)
+target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql Qt6::QuickControls2 Qt6::QuickDialogs2)

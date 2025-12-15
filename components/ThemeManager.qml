@@ -3,52 +3,41 @@ import QtQuick 2.15
 QtObject {
     id: theme
 
-    // Toggle this to switch themes
     property bool isDarkMode: false
-    property bool is24HourFormat: false
+    property bool is24HourFormat: false // Toggled by AboutOverlay
 
-    // Colors derived from your tokens
-    readonly property color mainBackgroundColor: isDarkMode ? "#3E3E42" : "#E9E9E9"
+    property color mainBackgroundColor: isDarkMode ? "#363F45" : "#E5E5E5"
+    property color idleColor: "#709775"
 
-    // Timer State Colors
-    readonly property color idleColor: isDarkMode ? "#396745" : "#709775" // Sage Green
+    property color workFill: isDarkMode ? "#3E6183" : "#6282A1"
+    property color shortBreakFill: isDarkMode ? "#864569" : "#AD5887"
+    property color longBreakFill: isDarkMode ? "#5E4A82" : "#745D9C"
 
-    // Cycle Specific Colors
-    readonly property color workFill: isDarkMode ? "#3E6183" : "#6282A1"
-    readonly property color workStroke: isDarkMode ? "#3F628F" : "#2C4B69"
+    property color workStroke: isDarkMode ? "#2A4663" : "#4A6E8C"
+    property color shortBreakStroke: isDarkMode ? "#66304D" : "#8F456D"
+    property color longBreakStroke: isDarkMode ? "#453663" : "#5E4A82"
 
-    readonly property color shortBreakFill: isDarkMode ? "#864569" : "#AD5887"
-    readonly property color shortBreakStroke: isDarkMode ? "#8E5875" : "#7B345B"
+    property color textPrimary: isDarkMode ? "#E0E0E0" : "#4A4A4A"
+    property color textSecondary: isDarkMode ? "#B0B0B0" : "#797979"
+    property color borderColor: isDarkMode ? "#505050" : "#D1D1D1"
 
-    readonly property color longBreakFill: isDarkMode ? "#5E4A82" : "#745D9C"
-    readonly property color longBreakStroke: isDarkMode ? "#6A56A0" : "#4B3374"
+    property string mainFont: "Montserrat"
 
-    // Text & Borders
-    readonly property color textPrimary: isDarkMode ? "#E9E9E9" : "#191716"
-    readonly property color textSecondary: isDarkMode ? "#BEBEBE" : "#4A4A4A"
-    readonly property color borderColor: isDarkMode ? "#4E4E4E" : "#797979"
-
-    // Font Configuration
-    readonly property string mainFont: "Montserrat"
-
-    // Helper: Get color based on timer state
     function getTimerColor(type, isStroke) {
-        switch(type) {
-            case "work": return isStroke ? workStroke : workFill
-            case "shortBreak": return isStroke ? shortBreakStroke : shortBreakFill
-            case "longBreak": return isStroke ? longBreakStroke : longBreakFill
-            default: return idleColor
-        }
+        if (type === "work") return isStroke ? workStroke : workFill
+        if (type === "shortBreak") return isStroke ? shortBreakStroke : shortBreakFill
+        if (type === "longBreak") return isStroke ? longBreakStroke : longBreakFill
+        return idleColor
     }
 
-    // NEW: Time Formatter
+    // Global Time Formatter
     function formatTime(hour, minute) {
         if (is24HourFormat) {
             return (hour < 10 ? "0"+hour : hour) + ":" + (minute < 10 ? "0"+minute : minute)
         } else {
             var ampm = hour >= 12 ? "PM" : "AM"
             var h = hour % 12
-            h = h ? h : 12 // the hour '0' should be '12'
+            h = h ? h : 12
             return h + ":" + (minute < 10 ? "0"+minute : minute) + " " + ampm
         }
     }

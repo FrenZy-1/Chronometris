@@ -13,95 +13,149 @@ Flickable {
 
     ColumnLayout {
         id: content
-        width: parent.width
-        spacing: 24
+        width: parent.width; spacing: 24
 
-        // Heatmap (Connected to DB)
+        // Stats Header
         ColumnLayout {
-            Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
-            Text { text: "Heatmap:"; font.family: "Montserrat"; font.pixelSize: 18; font.weight: Font.Bold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Layout.fillWidth: true; Layout.margins: 25; Layout.topMargin: 20; Layout.alignment: Qt.AlignHCenter
+            Text { text: "Today's Stats:"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Total Focus: 4h 20m"; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+        }
 
-            GridLayout {
-                Layout.alignment: Qt.AlignHCenter
-                columns: 14; columnSpacing: 4; rowSpacing: 4
-                Repeater {
-                    model: engine.heatmapData // FROM C++
-                    Rectangle {
-                        width: 18; height: 18; radius: 2
-                        property int intensity: modelData
-                        color: accentColor
-                        opacity: intensity === 3 ? 1.0 : (intensity === 2 ? 0.6 : (intensity === 1 ? 0.3 : 0.1))
+        // SCROLLING HEATMAP
+        ColumnLayout {
+            Layout.fillWidth: true; spacing: 5
+            Text { text: "Activity History"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+
+            // CONTAINER FOR CLIPPING
+            Item {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 160
+
+                // The Mask/Clip Area (Smaller than page width)
+                Item {
+                    anchors.fill: parent
+                    anchors.leftMargin: 25
+                    anchors.rightMargin: 25
+                    clip: true // <--- THIS CLIPS THE CONTENT
+
+                    ListView {
+                        anchors.fill: parent
+                        orientation: ListView.Horizontal
+                        layoutDirection: Qt.RightToLeft
+                        spacing: 4
+                        model: 52
+
+                        delegate: Column {
+                            spacing: 4
+                            // Month Label
+                            Text {
+                                text: index % 4 === 0 ? "JAN" : "" // Placeholder logic for labels
+                                font.pixelSize: 9; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter
+                            }
+                            // Grid
+                            Repeater {
+                                model: 7
+                                Rectangle {
+                                    width: 14; height: 14; radius: 2
+                                    property int intensity: Math.floor(Math.random() * 5)
+                                    color: accentColor
+                                    opacity: intensity===0?0.1:(intensity*0.25)
+                                }
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // Bar Chart (Connected to DB)
+
+        // BAR CHART
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
-            Text { text: "Weekly Hours:"; font.family: "Montserrat"; font.pixelSize: 18; font.weight: Font.Bold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Weekly Hours:"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+
             RowLayout {
-                Layout.fillWidth: true; height: 120; spacing: 8; Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true; height: 140; spacing: 15; Layout.alignment: Qt.AlignHCenter
                 Repeater {
-                    model: engine.chartData // FROM C++ (List of 7 ints)
-                    Rectangle {
+                    model: engine.chartData // Now returns List of Maps [{work:5, short:2, long:1}, ...]
+
+                    // Each Day is a Row of 3 Rectangles
+                    Row {
                         Layout.alignment: Qt.AlignBottom
-                        width: 25
-                        // Scale height: Max expected ~10 hours, so * 10
-                        height: Math.min(modelData * 10 + 5, 120)
-                        radius: 4
-                        color: accentColor
-                        Text { anchors.top: parent.bottom; anchors.topMargin: 2; anchors.horizontalCenter: parent.horizontalCenter; text: ["M","T","W","T","F","S","S"][index]; font.pixelSize: 8; color: theme.textSecondary }
+                        spacing: 2
+
+                        // Work Bar (Blue)
+                        Rectangle {
+                            width: 8; height: modelData.work * 10; color: theme.workFill; radius: 2
+                            anchors.bottom: parent.bottom
+                        }
+                        // Short Bar (Pink)
+                        Rectangle {
+                            width: 8; height: modelData.short * 10; color: theme.shortBreakFill; radius: 2
+                            anchors.bottom: parent.bottom
+                        }
+                        // Long Bar (Purple)
+                        Rectangle {
+                            width: 8; height: modelData.long * 10; color: theme.longBreakFill; radius: 2
+                            anchors.bottom: parent.bottom
+                        }
+
+                        // Day Label underneath
+                        Text {
+                            anchors.top: parent.bottom; anchors.topMargin: 5; anchors.horizontalCenter: parent.horizontalCenter
+                            text: ["M","T","W","T","F","S","S"][index]
+                            font.pixelSize: 8; color: theme.textSecondary
+                        }
                     }
                 }
             }
         }
 
-        // Pie Chart (Connected to DB)
+        // PIE CHART (Canvas)
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
-            Text { text: "Distribution:"; font.family: "Montserrat"; font.pixelSize: 18; font.weight: Font.Bold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: "Distribution:"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
             Canvas {
                 width: 200; height: 200; Layout.alignment: Qt.AlignHCenter
-                property var data: engine.pieData // [Work, Break, Long]
-                onDataChanged: requestPaint()
-
                 onPaint: {
                     var ctx = getContext("2d"); ctx.reset();
-                    var cx = width/2; var cy = height/2; var radius = 70;
-                    var total = data[0] + data[1] + data[2];
-                    if(total === 0) total = 1; // Avoid divide by zero
+                    var cx = width/2; var cy = height/2; var r = 80;
 
-                    var currentAngle = -Math.PI/2;
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 0, 4, false); // Blue slice
+                    ctx.strokeStyle = theme.workFill; ctx.lineWidth = 20; ctx.stroke();
 
-                    function drawSlice(value, color) {
-                        if(value === 0) return;
-                        var sliceAngle = (value / total) * 2 * Math.PI;
-                        ctx.beginPath();
-                        ctx.moveTo(cx, cy);
-                        ctx.arc(cx, cy, radius, currentAngle, currentAngle + sliceAngle);
-                        ctx.closePath();
-                        ctx.fillStyle = color;
-                        ctx.fill();
-                        currentAngle += sliceAngle;
-                    }
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 4, 5.5, false); // Pink slice
+                    ctx.strokeStyle = theme.shortBreakFill; ctx.lineWidth = 20; ctx.stroke();
 
-                    drawSlice(data[0], theme.workFill);
-                    drawSlice(data[1], theme.shortBreakFill);
-                    drawSlice(data[2], theme.longBreakFill);
-
-                    // Donut
-                    ctx.beginPath(); ctx.arc(cx, cy, 35, 0, 2*Math.PI); ctx.fillStyle = theme.mainBackgroundColor; ctx.fill();
+                    ctx.beginPath(); ctx.arc(cx, cy, r, 5.5, 6.28, false); // Purple slice
+                    ctx.strokeStyle = theme.longBreakFill; ctx.lineWidth = 20; ctx.stroke();
                 }
+                Component.onCompleted: requestPaint()
             }
         }
 
-        // DEBUG BUTTON
-        Button {
-            text: "Generate Dummy Data"
-            Layout.alignment: Qt.AlignHCenter
-            onClicked: engine.generateDummyData()
+        // LINE CHART (Canvas)
+        ColumnLayout {
+            Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
+            Text { text: "Focus Trend:"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+
+            Canvas {
+                width: 280; height: 120; Layout.alignment: Qt.AlignHCenter
+                onPaint: {
+                    var ctx = getContext("2d"); ctx.reset(); ctx.lineWidth = 2;
+                    function drawLine(pts, color) {
+                        ctx.strokeStyle = color; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
+                        for(var i=1;i<pts.length;i++) ctx.lineTo(pts[i][0], pts[i][1]);
+                        ctx.stroke();
+                    }
+                    drawLine([[0,80],[40,50],[80,40],[120,60],[160,30],[200,40],[240,20],[280,30]], theme.workFill);
+                    drawLine([[0,100],[40,90],[80,85],[120,95],[160,80],[200,85],[240,75],[280,80]], theme.shortBreakFill);
+                    drawLine([[0,110],[40,110],[80,110],[120,105],[160,110],[200,105],[240,110],[280,110]], theme.longBreakFill);
+                }
+                Component.onCompleted: requestPaint()
+            }
         }
 
         Item { Layout.preferredHeight: 80 }

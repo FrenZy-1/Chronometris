@@ -68,21 +68,38 @@ void DatabaseManager::addAlarm(const QVariantMap& data) {
 
 // --- ANALYTICS QUERIES ---
 
-QList<int> DatabaseManager::getWeeklyHours() {
-    QList<int> hours = {0,0,0,0,0,0,0}; // Mon-Sun
-    // In a real app, write SQL to group by day of week.
-    // For demo, we return mock data or fetch all and sum.
-    // Let's use Random for "lively" charts if DB is empty, or DB data.
+QVariantList DatabaseManager::getWeeklyStats() {
+    QVariantList weeklyData;
 
-    QSqlQuery query("SELECT strftime('%w', date), sum(duration) FROM sessions GROUP BY 1");
-    while(query.next()) {
-        int day = query.value(0).toInt(); // 0 = Sunday
-        int seconds = query.value(1).toInt();
-        // Map 0(Sun)->6, 1(Mon)->0
-        int idx = (day + 6) % 7;
-        hours[idx] = seconds / 3600; // Convert to hours
+    // Initialize 7 empty days
+    for(int i=0; i<7; i++) {
+        QVariantMap day;
+        day["work"] = 0; day["short"] = 0; day["long"] = 0;
+        weeklyData.append(day);
     }
-    return hours;
+
+    // Real SQL Query: Sum duration by Type AND Day
+    // Note: strftime('%w') returns 0=Sunday, 6=Saturday
+    QSqlQuery query("SELECT strftime('%w', date), type, sum(duration) FROM sessions GROUP BY 1, 2");
+
+    while(query.next()) {
+        int day = query.value(0).toInt(); // 0-6
+        QString type = query.value(1).toString();
+        int seconds = query.value(2).toInt();
+        int hours = seconds / 3600; // or minutes if you prefer
+
+        // Map Sunday(0) -> index 6, Monday(1) -> index 0
+        int idx = (day + 6) % 7;
+
+        // Update the map
+        QVariantMap dayMap = weeklyData[idx].toMap();
+        if (type == "work") dayMap["work"] = hours;
+        else if (type == "shortBreak") dayMap["short"] = hours;
+        else if (type == "longBreak") dayMap["long"] = hours;
+
+        weeklyData[idx] = dayMap; // Save back
+    }
+    return weeklyData;
 }
 
 QList<int> DatabaseManager::getSessionDistribution() {

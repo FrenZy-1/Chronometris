@@ -17,7 +17,6 @@ ApplicationWindow {
     property alias appTheme: themeManager
     ThemeManager { id: themeManager }
 
-    // Dynamic Color Engine
     property color currentAccentColor: {
         if (engine.currentState === "stopped") return appTheme.idleColor
         return appTheme.getTimerColor(engine.currentType, false)
@@ -66,25 +65,23 @@ ApplicationWindow {
         interactive: true
 
         // PASSING ACCENT COLOR (This works only if pages have the property!)
+
         DashboardPage {
-            property string title: "DASHBOARD"
-            theme: window.appTheme
-            accentColor: window.currentAccentColor
+            theme: window.appTheme; accentColor: window.currentAccentColor
+            // Connect signal to overlay
+            onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         TimerPage {
-            property string title: "TIMERS"
-            theme: window.appTheme
-            accentColor: window.currentAccentColor
+            theme: window.appTheme; accentColor: window.currentAccentColor
+            onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         AlarmsPage {
-            property string title: "ALARMS"
-            theme: window.appTheme
-            accentColor: window.currentAccentColor
+            theme: window.appTheme; accentColor: window.currentAccentColor
+            // THIS FIXES THE ERROR
+            onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         AnalyticsPage {
-            property string title: "ANALYTICS"
-            theme: window.appTheme
-            accentColor: window.currentAccentColor
+            theme: window.appTheme; accentColor: window.currentAccentColor
         }
     }
 
@@ -193,7 +190,9 @@ ApplicationWindow {
         }
     }
 
+    // OVERLAYS (Define them here globally)
     AboutOverlay { id: aboutOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
     AddTimerOverlay { id: addTimerOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
     AddAlarmOverlay { id: addAlarmOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
+    DetailsOverlay { id: detailsOverlay; theme: window.appTheme; accentColor: window.currentAccentColor }
 }

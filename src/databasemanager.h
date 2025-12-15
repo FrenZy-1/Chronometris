@@ -18,7 +18,7 @@ public:
     void addAlarm(const QVariantMap& data);
 
     // Queries
-    QList<int> getWeeklyHours(); // Returns 7 values (M-S) for bar chart
+    QVariantList getWeeklyStats();
     QList<int> getSessionDistribution(); // Returns 3 values (Work, Break, Long)
     QVariantList getHeatmapData(); // Returns 70 values for heatmap
 

@@ -1,6 +1,7 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import QtQuick.Dialogs
 import "../components"
 
 Popup {
@@ -13,18 +14,35 @@ Popup {
 
     property var theme
     property color accentColor
-
-    property string mode: "" // "pomodoro", "custom"
+    property string mode: ""
     property bool isScheduled: false
     property string preset: "standard"
+    property string selectedRingtone: ""
+    property string repeatMode: "daily" // "daily" or "custom"
+    property int selectedPresetIndex: -1
+    property var selectedDays: [] // Array to store days
+
+    FileDialog {
+        id: fileDialog; title: "Select Ringtone"; nameFilters: ["Audio files (*.mp3 *.wav *.ogg)"]
+        onAccepted: { selectedRingtone = fileDialog.selectedFile; }
+    }
+
+    // Day Toggle Logic
+    function toggleDay(index) {
+        var i = selectedDays.indexOf(index);
+        if (i !== -1) selectedDays.splice(i, 1);
+        else selectedDays.push(index);
+        daysRepeater.model = 7; // Force refresh visual
+        daysRepeater.model = ["M","T","W","T","F","S","S"];
+    }
+
+    function isDaySelected(index) { return selectedDays.indexOf(index) !== -1; }
 
     Rectangle {
-        anchors.fill: parent; radius: 20
-        color: accentColor; border.width: 4; border.color: "white"
+        anchors.fill: parent; radius: 20; color: accentColor; border.width: 4; border.color: "white"
 
         Flickable {
-            anchors.fill: parent; anchors.margins: 20
-            contentHeight: contentCol.height; clip: true
+            anchors.fill: parent; anchors.margins: 20; contentHeight: contentCol.height; clip: true
 
             ColumnLayout {
                 id: contentCol
@@ -37,13 +55,11 @@ Popup {
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter
                     spacing: 10
-                    Rectangle {
-                        width: 100; height: 35; radius: 5; color: mode==="pomodoro"?"#E9E9E9":"transparent"; border.color: "white"
+                    Rectangle { width: 100; height: 35; radius: 5; color: mode==="pomodoro"?"#E9E9E9":"transparent"; border.color: "white"
                         Text { anchors.centerIn: parent; text: "Pomodoro"; font.bold: true; color: mode==="pomodoro"?accentColor:"white" }
                         MouseArea { anchors.fill: parent; onClicked: mode="pomodoro" }
                     }
-                    Rectangle {
-                        width: 100; height: 35; radius: 5; color: mode==="custom"?"#E9E9E9":"transparent"; border.color: "white"
+                    Rectangle { width: 100; height: 35; radius: 5; color: mode==="custom"?"#E9E9E9":"transparent"; border.color: "white"
                         Text { anchors.centerIn: parent; text: "Custom"; font.bold: true; color: mode==="custom"?accentColor:"white" }
                         MouseArea { anchors.fill: parent; onClicked: mode="custom" }
                     }
@@ -55,128 +71,147 @@ Popup {
                     Layout.fillWidth: true; spacing: 8
                     TextField { id: tName; Layout.fillWidth: true; placeholderText: "Timer Name"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
                     TextField { Layout.fillWidth: true; placeholderText: "Description"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
-                    TextField { Layout.fillWidth: true; placeholderText: "Ringtone"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
+                    TextField { Layout.fillWidth: true; placeholderText: "Alarm Ringtone"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
+
+                    // Ringtone
+                    RowLayout {
+                        Layout.fillWidth: true
+                        TextField {
+                            Layout.fillWidth: true; readOnly: true
+                            text: selectedRingtone !== "" ? selectedRingtone : ""
+                            placeholderText: "Select Ringtone"
+                            background: Rectangle { radius: 5; color: "#E9E9E9" }
+                        }
+                        Button {
+                            text: "📂" // Simple icon for file picker button
+                            background: Rectangle { color: "#E9E9E9"; radius: 5 }
+                            onClicked: fileDialog.open()
+                        }
+                    }
                 }
 
-                // Pomodoro Presets
+                // POMODORO PRESETS (Restored)
                 ColumnLayout {
                     visible: mode === "pomodoro"
                     Layout.fillWidth: true
                     RowLayout {
-                        Text { text: "Format:"; color: "white"; font.bold: true }
-                        Item { Layout.fillWidth: true }
-                        Rectangle { width: 70; height: 25; color: preset==="standard"?"white":"transparent"; border.color: "white"; radius: 4
+                        Rectangle { width: 70; height: 25; color: preset==="standard"?"white":"transparent"; radius: 4; border.color:"white"
                             Text { anchors.centerIn: parent; text: "Standard"; color: preset==="standard"?accentColor:"white"; font.bold: true; font.pixelSize: 10 }
                             MouseArea { anchors.fill: parent; onClicked: preset="standard" }
                         }
-                        Rectangle { width: 70; height: 25; color: preset==="presets"?"white":"transparent"; border.color: "white"; radius: 4
+                        Rectangle { width: 70; height: 25; color: preset==="presets"?"white":"transparent"; radius: 4; border.color:"white"
                             Text { anchors.centerIn: parent; text: "Presets"; color: preset==="presets"?accentColor:"white"; font.bold: true; font.pixelSize: 10 }
                             MouseArea { anchors.fill: parent; onClicked: preset="presets" }
                         }
                     }
-                    // Presets List
+
+                    // FIXED PRESETS (Exclusive)
                     ColumnLayout {
-                        visible: preset === "presets"; spacing: 5
+                        visible: preset === "presets"
                         Repeater {
-                            model: ["15/3/5", "30/5/10", "50/10/20"]
+                            model: ["15 / 3 / 5", "30 / 5 / 10", "50 / 10 / 20"]
                             RowLayout {
-                                Rectangle { width: 16; height: 16; radius: 8; border.color: "white"; color: "transparent"; Rectangle { anchors.centerIn: parent; width: 10; height: 10; radius: 5; color: "white"; visible: index===0 } }
+                                spacing: 10
+                                // Custom Checkbox Logic
+                                Rectangle {
+                                    width: 16; height: 16; radius: 8; border.color: "white"; color: "transparent"
+                                    Rectangle { anchors.centerIn: parent; width: 10; height: 10; radius: 5; color: "white"; visible: selectedPresetIndex === index }
+                                    MouseArea { anchors.fill: parent; onClicked: selectedPresetIndex = index }
+                                }
                                 Text { text: modelData; color: "white" }
                             }
                         }
                     }
                 }
 
-                // Custom Timer Picker
+                // Custom Duration UI
                 ColumnLayout {
                     visible: mode === "custom"
                     Layout.fillWidth: true
+
+                    // Cycle Type
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
                         Repeater {
                             model: ["Work", "Break", "L. Break"]
-                            Rectangle {
-                                width: 70; height: 30; radius: 5; color: index===0?"#E9E9E9":"transparent"; border.color: "white"
-                                Text { anchors.centerIn: parent; text: modelData; color: index===0?accentColor:"white"; font.bold: true }
+                            Rectangle { width: 70; height: 30; radius: 5; color: "#E9E9E9"; border.color: "white"
+                                Text { anchors.centerIn: parent; text: modelData; color: accentColor; font.bold: true }
                             }
                         }
                     }
-                    RowLayout {
-                        Layout.alignment: Qt.AlignHCenter; spacing: 5
-                        CheckBox { text: "Hrs"; contentItem: Text { text: "Hrs"; color: "white"; leftPadding: 25 } }
-                        Rectangle { width: 50; height: 40; color: "white"; radius: 5; Text { anchors.centerIn: parent; text: "00"; font.pixelSize: 20 } }
-                        Text { text: ":"; color: "white" }
-                        Rectangle { width: 50; height: 40; color: "white"; radius: 5; Text { anchors.centerIn: parent; text: "25"; font.pixelSize: 20 } }
-                        Text { text: ":"; color: "white" }
-                        Rectangle { width: 50; height: 40; color: "white"; radius: 5; Text { anchors.centerIn: parent; text: "00"; font.pixelSize: 20 } }
+
+                    // Hour Toggle
+                    CheckBox {
+                        id: showHoursCheck
+                        text: "Show Hours"; checked: true
+                        contentItem: Text { text: "Show Hours"; color: "white"; leftPadding: 25 }
                     }
+
+                    // DURATION PICKER (HH:MM:SS)
+                    TimePicker { theme: popup.theme; isDuration: true; Layout.alignment: Qt.AlignHCenter }
                 }
 
-                // Schedule Toggle
+                // Schedule
                 RowLayout {
-                    visible: mode !== ""
-                    CheckBox {
-                        id: scheduleCheck
-                        checked: isScheduled; onCheckedChanged: isScheduled = checked
-                        indicator: Rectangle { width: 20; height: 20; radius: 3; color: scheduleCheck.checked?"white":"transparent"; border.color: "white" }
-                    }
+                    visible: mode !== ""; CheckBox { id: scheduleCheck; checked: isScheduled; onCheckedChanged: isScheduled = checked }
                     Text { text: "Schedule (Alarm)"; color: "white"; font.bold: true }
                 }
 
-                // Alarm Settings (Reusable)
+                // Alarm Settings
                 ColumnLayout {
                     visible: isScheduled && mode !== ""
-                    Layout.fillWidth: true; spacing: 10
+                    Layout.fillWidth: true
+
+                    // TIME PICKER (AM/PM)
+                    TimePicker { theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
+
                     RowLayout {
-                        Layout.alignment: Qt.AlignHCenter
-                        Rectangle { width: 50; height: 50; color: "#E9E9E9"; radius: 5; Text { anchors.centerIn: parent; text: "AM"; font.pixelSize: 18 } }
-                        Rectangle { width: 50; height: 50; color: "#E9E9E9"; radius: 5; Text { anchors.centerIn: parent; text: "08"; font.pixelSize: 24 } }
-                        Rectangle { width: 50; height: 50; color: "#E9E9E9"; radius: 5; Text { anchors.centerIn: parent; text: "30"; font.pixelSize: 24 } }
+                        Text { text: "Date:"; color: "white" }
+                        TextField { Layout.fillWidth: true; placeholderText: "Today"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
                     }
 
-                    // Repeat Toggle (Double Button)
+                    // Repeat Toggle
                     RowLayout {
                         Text { text: "Repeat:"; color: "white"; font.bold: true }
                         Item { Layout.fillWidth: true }
                         Row {
-                            Rectangle { width: 60; height: 25; color: "white"; radius: 4; Text { anchors.centerIn: parent; text: "Daily"; color: accentColor; font.bold: true } }
-                            Rectangle { width: 60; height: 25; color: "transparent"; border.color: "white"; radius: 4; Text { anchors.centerIn: parent; text: "Custom"; color: "white" } }
+                            Rectangle { width: 60; height: 25; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"
+                                Text { anchors.centerIn: parent; text: "Daily"; color: repeatMode==="daily"?accentColor:"white"; font.bold: true }
+                                MouseArea { anchors.fill: parent; onClicked: repeatMode="daily" }
+                            }
+                            Rectangle { width: 60; height: 25; color: repeatMode==="custom"?"white":"transparent"; radius: 4; border.color:"white"
+                                Text { anchors.centerIn: parent; text: "Custom"; color: repeatMode==="custom"?accentColor:"white" }
+                                MouseArea { anchors.fill: parent; onClicked: repeatMode="custom" }
+                            }
                         }
                     }
 
-                    // Days
+                    // Days (Visible only if Custom)
                     RowLayout {
+                        visible: repeatMode === "custom"
                         Layout.alignment: Qt.AlignHCenter
                         Repeater {
+                            id: daysRepeater
                             model: ["M","T","W","T","F","S","S"]
-                            Rectangle { width: 25; height: 25; radius: 12.5; color: index<5?"white":"transparent"; border.color: "white"
-                                Text { anchors.centerIn: parent; text: modelData; color: index<5?accentColor:"white"; font.pixelSize: 10; font.bold: true }
+                            Rectangle {
+                                width: 30; height: 30; radius: 15
+                                // Visual State based on array
+                                color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
+                                Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
+                                MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
                             }
                         }
                     }
                 }
 
-                // Actions
+                // Buttons (Using SVGs)
                 Item { Layout.fillHeight: true }
                 RowLayout {
                     visible: mode !== ""
-                    Layout.alignment: Qt.AlignHCenter; spacing: 40
-                    Rectangle {
-                        width: 50; height: 50; radius: 25; color: "#E9E9E9"
-                        Text { anchors.centerIn: parent; text: "✕"; font.pixelSize: 20; color: "#797979" }
-                        MouseArea { anchors.fill: parent; onClicked: popup.close() }
-                    }
-                    Rectangle {
-                        width: 50; height: 50; radius: 25; color: "#E9E9E9"
-                        Text { anchors.centerIn: parent; text: "✓"; font.pixelSize: 24; color: accentColor; font.bold: true }
-                        MouseArea {
-                            anchors.fill: parent;
-                            onClicked: {
-                                // Call C++ to save
-                                engine.addTimer({name: tName.text, desc: "Custom Timer"});
-                                popup.close();
-                            }
-                        }
+                    Layout.alignment: Qt.AlignHCenter; spacing: 30
+                    RoundButton { icon: "close"; color: "#E9E9E9"; iconColor: "#797979"; onClicked: popup.close() }
+                    RoundButton { icon: "check"; color: "#E9E9E9"; iconColor: accentColor;
+                        onClicked: { engine.addTimer({name: tName.text}); popup.close() }
                     }
                 }
                 Item { height: 10 }
