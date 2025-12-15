@@ -14,13 +14,34 @@ Popup {
 
     property var theme
     property color accentColor
+
+    // Data Props
     property string mode: ""
     property bool isScheduled: false
     property string preset: "standard"
     property string selectedRingtone: ""
-    property string repeatMode: "daily" // "daily" or "custom"
+    property string repeatMode: "daily"
     property int selectedPresetIndex: -1
-    property var selectedDays: [] // Array to store days
+    property var selectedDays: []
+    property bool isEditMode: false // Track if we are editing
+
+    // --- EDIT FUNCTIONALITY ---
+    function openForEdit(data) {
+        isEditMode = true;
+        tName.text = data.name || "";
+        tDesc.text = data.desc || "";
+        // Logic to parse existing timer data would go here
+        // For now, we just open the overlay with name filled
+        mode = "custom"; // Default to custom view for editing
+        open();
+    }
+
+    function reset() {
+        isEditMode = false;
+        tName.text = "";
+        tDesc.text = "";
+        mode = "";
+    }
 
     FileDialog {
         id: fileDialog; title: "Select Ringtone"; nameFilters: ["Audio files (*.mp3 *.wav *.ogg)"]
@@ -32,7 +53,7 @@ Popup {
         var i = selectedDays.indexOf(index);
         if (i !== -1) selectedDays.splice(i, 1);
         else selectedDays.push(index);
-        daysRepeater.model = 7; // Force refresh visual
+        daysRepeater.model = 7;
         daysRepeater.model = ["M","T","W","T","F","S","S"];
     }
 
@@ -48,13 +69,16 @@ Popup {
                 id: contentCol
                 width: parent.width; spacing: 12
 
-                Text { Layout.alignment: Qt.AlignHCenter; text: "ADD TIMER"; font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white" }
+                Text {
+                    Layout.alignment: Qt.AlignHCenter;
+                    text: isEditMode ? "EDIT TIMER" : "ADD TIMER"
+                    font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white"
+                }
                 Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
                 // Mode Toggle
                 RowLayout {
-                    Layout.alignment: Qt.AlignHCenter
-                    spacing: 10
+                    Layout.alignment: Qt.AlignHCenter; spacing: 10
                     Rectangle { width: 100; height: 35; radius: 5; color: mode==="pomodoro"?"#E9E9E9":"transparent"; border.color: "white"
                         Text { anchors.centerIn: parent; text: "Pomodoro"; font.bold: true; color: mode==="pomodoro"?accentColor:"white" }
                         MouseArea { anchors.fill: parent; onClicked: mode="pomodoro" }
@@ -69,28 +93,33 @@ Popup {
                 ColumnLayout {
                     visible: mode !== ""
                     Layout.fillWidth: true; spacing: 8
-                    TextField { id: tName; Layout.fillWidth: true; placeholderText: "Timer Name"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
-                    TextField { Layout.fillWidth: true; placeholderText: "Description"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
-                    TextField { Layout.fillWidth: true; placeholderText: "Alarm Ringtone"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
 
-                    // Ringtone
+                    // FIXED INPUTS
+                    TextField {
+                        id: tName; Layout.fillWidth: true; placeholderText: "Timer Name";
+                        selectByMouse: true; color: "black" // Key fix
+                        background: Rectangle { radius: 5; color: "#E9E9E9" }
+                    }
+                    TextField {
+                        id: tDesc; Layout.fillWidth: true; placeholderText: "Description";
+                        selectByMouse: true; color: "black"
+                        background: Rectangle { radius: 5; color: "#E9E9E9" }
+                    }
+
+                    // Ringtone Picker (Single Instance)
                     RowLayout {
                         Layout.fillWidth: true
                         TextField {
                             Layout.fillWidth: true; readOnly: true
                             text: selectedRingtone !== "" ? selectedRingtone : ""
-                            placeholderText: "Select Ringtone"
+                            placeholderText: "Select Ringtone..."
                             background: Rectangle { radius: 5; color: "#E9E9E9" }
                         }
-                        Button {
-                            text: "📂" // Simple icon for file picker button
-                            background: Rectangle { color: "#E9E9E9"; radius: 5 }
-                            onClicked: fileDialog.open()
-                        }
+                        Button { text: "📂"; width: 40; onClicked: fileDialog.open() }
                     }
                 }
 
-                // POMODORO PRESETS (Restored)
+                // Pomodoro Presets
                 ColumnLayout {
                     visible: mode === "pomodoro"
                     Layout.fillWidth: true
@@ -104,17 +133,14 @@ Popup {
                             MouseArea { anchors.fill: parent; onClicked: preset="presets" }
                         }
                     }
-
-                    // FIXED PRESETS (Exclusive)
+                    // FIXED EXCLUSIVE PRESETS
                     ColumnLayout {
                         visible: preset === "presets"
                         Repeater {
                             model: ["15 / 3 / 5", "30 / 5 / 10", "50 / 10 / 20"]
                             RowLayout {
                                 spacing: 10
-                                // Custom Checkbox Logic
-                                Rectangle {
-                                    width: 16; height: 16; radius: 8; border.color: "white"; color: "transparent"
+                                Rectangle { width: 16; height: 16; radius: 8; border.color: "white"; color: "transparent"
                                     Rectangle { anchors.centerIn: parent; width: 10; height: 10; radius: 5; color: "white"; visible: selectedPresetIndex === index }
                                     MouseArea { anchors.fill: parent; onClicked: selectedPresetIndex = index }
                                 }
@@ -129,7 +155,6 @@ Popup {
                     visible: mode === "custom"
                     Layout.fillWidth: true
 
-                    // Cycle Type
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
                         Repeater {
@@ -140,15 +165,12 @@ Popup {
                         }
                     }
 
-                    // Hour Toggle
                     CheckBox {
-                        id: showHoursCheck
-                        text: "Show Hours"; checked: true
+                        id: showHoursCheck; text: "Show Hours"; checked: true
                         contentItem: Text { text: "Show Hours"; color: "white"; leftPadding: 25 }
                     }
 
-                    // DURATION PICKER (HH:MM:SS)
-                    TimePicker { theme: popup.theme; isDuration: true; Layout.alignment: Qt.AlignHCenter }
+                    TimePicker { theme: popup.theme; isDuration: true; showHours: showHoursCheck.checked; Layout.alignment: Qt.AlignHCenter }
                 }
 
                 // Schedule
@@ -162,7 +184,13 @@ Popup {
                     visible: isScheduled && mode !== ""
                     Layout.fillWidth: true
 
-                    // TIME PICKER (AM/PM)
+                    // ALARM RINGTONE (Added)
+                    TextField {
+                        Layout.fillWidth: true; placeholderText: "Alarm Ringtone";
+                        selectByMouse: true; color: "black"
+                        background: Rectangle { radius: 5; color: "#E9E9E9" }
+                    }
+
                     TimePicker { theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
 
                     RowLayout {
@@ -170,7 +198,6 @@ Popup {
                         TextField { Layout.fillWidth: true; placeholderText: "Today"; background: Rectangle { radius: 5; color: "#E9E9E9" } }
                     }
 
-                    // Repeat Toggle
                     RowLayout {
                         Text { text: "Repeat:"; color: "white"; font.bold: true }
                         Item { Layout.fillWidth: true }
@@ -186,7 +213,6 @@ Popup {
                         }
                     }
 
-                    // Days (Visible only if Custom)
                     RowLayout {
                         visible: repeatMode === "custom"
                         Layout.alignment: Qt.AlignHCenter
@@ -195,7 +221,6 @@ Popup {
                             model: ["M","T","W","T","F","S","S"]
                             Rectangle {
                                 width: 30; height: 30; radius: 15
-                                // Visual State based on array
                                 color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
                                 Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
                                 MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
@@ -204,14 +229,16 @@ Popup {
                     }
                 }
 
-                // Buttons (Using SVGs)
                 Item { Layout.fillHeight: true }
                 RowLayout {
                     visible: mode !== ""
                     Layout.alignment: Qt.AlignHCenter; spacing: 30
                     RoundButton { icon: "close"; color: "#E9E9E9"; iconColor: "#797979"; onClicked: popup.close() }
                     RoundButton { icon: "check"; color: "#E9E9E9"; iconColor: accentColor;
-                        onClicked: { engine.addTimer({name: tName.text}); popup.close() }
+                        onClicked: {
+                            engine.addTimer({name: tName.text});
+                            popup.close()
+                        }
                     }
                 }
                 Item { height: 10 }

@@ -1,7 +1,7 @@
-import QtQuick
-import QtQuick.Controls
-import QtQuick.Layouts
-import QtQuick.Controls.Material // <--- ADDED THIS TO FIX ELEVATION ERROR
+import QtQuick 2.15
+import QtQuick.Controls 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls.Material 2.15
 import "components"
 import "pages"
 import "overlays"
@@ -64,23 +64,25 @@ ApplicationWindow {
         clip: true
         interactive: true
 
-        // PASSING ACCENT COLOR (This works only if pages have the property!)
-
         DashboardPage {
+            property string title: "DASHBOARD"
             theme: window.appTheme; accentColor: window.currentAccentColor
             // Connect signal to overlay
             onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         TimerPage {
+            property string title: "TIMERS"
             theme: window.appTheme; accentColor: window.currentAccentColor
             onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         AlarmsPage {
+            property string title: "ALARMS"
             theme: window.appTheme; accentColor: window.currentAccentColor
             // THIS FIXES THE ERROR
             onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
         }
         AnalyticsPage {
+            property string title: "ANALYTICS"
             theme: window.appTheme; accentColor: window.currentAccentColor
         }
     }
@@ -138,7 +140,7 @@ ApplicationWindow {
 
                             ColoredIcon {
                                 source: "assets/icons/" + modelData.icon + ".svg"
-                                width: 40; height: 40
+                                width: 24; height: 24
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                             }
@@ -178,7 +180,7 @@ ApplicationWindow {
             Behavior on scale { NumberAnimation { duration: 200; easing.type: Easing.OutBack } }
 
             // Visuals
-            color: "white"                       // White Background
+            color: "white"                        // White Background
             iconColor: window.currentAccentColor // Green/Blue/Purple Icon
             icon: "add"
             text: ""                             // No label for FAB

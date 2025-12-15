@@ -22,46 +22,23 @@ Flickable {
             Text { text: "Total Focus: 4h 20m"; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
         }
 
-        // SCROLLING HEATMAP
+        // SCROLLING HEATMAP (Fixed Labels)
         ColumnLayout {
             Layout.fillWidth: true; spacing: 5
             Text { text: "Activity History"; font.bold: true; font.pixelSize: 18; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
-            // CONTAINER FOR CLIPPING
             Item {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 160
-
-                // The Mask/Clip Area (Smaller than page width)
+                Layout.fillWidth: true; Layout.preferredHeight: 160
                 Item {
-                    anchors.fill: parent
-                    anchors.leftMargin: 25
-                    anchors.rightMargin: 25
-                    clip: true // <--- THIS CLIPS THE CONTENT
-
+                    anchors.fill: parent; anchors.margins: 25; clip: true
                     ListView {
-                        anchors.fill: parent
-                        orientation: ListView.Horizontal
-                        layoutDirection: Qt.RightToLeft
-                        spacing: 4
-                        model: 52
-
+                        anchors.fill: parent; orientation: ListView.Horizontal; layoutDirection: Qt.RightToLeft; spacing: 4; model: 52
                         delegate: Column {
                             spacing: 4
-                            // Month Label
-                            Text {
-                                text: index % 4 === 0 ? "JAN" : "" // Placeholder logic for labels
-                                font.pixelSize: 9; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter
-                            }
-                            // Grid
+                            Text { text: index % 4 === 0 ? "JAN" : ""; font.pixelSize: 9; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
                             Repeater {
                                 model: 7
-                                Rectangle {
-                                    width: 14; height: 14; radius: 2
-                                    property int intensity: Math.floor(Math.random() * 5)
-                                    color: accentColor
-                                    opacity: intensity===0?0.1:(intensity*0.25)
-                                }
+                                Rectangle { width: 14; height: 14; radius: 2; color: accentColor; opacity: 0.2 + (Math.random() * 0.8) }
                             }
                         }
                     }
@@ -69,8 +46,7 @@ Flickable {
             }
         }
 
-
-        // BAR CHART
+        // BAR CHART (Fixed Layout Error)
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
             Text { text: "Weekly Hours:"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
@@ -78,34 +54,25 @@ Flickable {
             RowLayout {
                 Layout.fillWidth: true; height: 140; spacing: 15; Layout.alignment: Qt.AlignHCenter
                 Repeater {
-                    model: engine.chartData // Now returns List of Maps [{work:5, short:2, long:1}, ...]
+                    model: engine.chartData // [{work:5, short:2, long:1}, ...]
 
-                    // Each Day is a Row of 3 Rectangles
-                    Row {
+                    // Each Day Column
+                    Column {
                         Layout.alignment: Qt.AlignBottom
                         spacing: 2
 
-                        // Work Bar (Blue)
-                        Rectangle {
-                            width: 8; height: modelData.work * 10; color: theme.workFill; radius: 2
-                            anchors.bottom: parent.bottom
-                        }
-                        // Short Bar (Pink)
-                        Rectangle {
-                            width: 8; height: modelData.short * 10; color: theme.shortBreakFill; radius: 2
-                            anchors.bottom: parent.bottom
-                        }
-                        // Long Bar (Purple)
-                        Rectangle {
-                            width: 8; height: modelData.long * 10; color: theme.longBreakFill; radius: 2
-                            anchors.bottom: parent.bottom
+                        // Container for 3 bars side-by-side
+                        Row {
+                            spacing: 2
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            Rectangle { width: 6; height: modelData.work * 10; color: theme.workFill; radius: 2 }
+                            Rectangle { width: 6; height: modelData.short * 10; color: theme.shortBreakFill; radius: 2 }
+                            Rectangle { width: 6; height: modelData.long * 10; color: theme.longBreakFill; radius: 2 }
                         }
 
-                        // Day Label underneath
                         Text {
-                            anchors.top: parent.bottom; anchors.topMargin: 5; anchors.horizontalCenter: parent.horizontalCenter
                             text: ["M","T","W","T","F","S","S"][index]
-                            font.pixelSize: 8; color: theme.textSecondary
+                            font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter
                         }
                     }
                 }

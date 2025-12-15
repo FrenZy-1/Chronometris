@@ -17,10 +17,10 @@ Popup {
     // Data passed from Double Click
     property string itemType: "alarm"
     property string itemName: ""
-    property string itemDesc: ""
+    property string itemTime: ""
 
-    function openWithData(type, name, desc) {
-        itemType = type; itemName = name; itemDesc = desc;
+    function openWithData(type, name, time) {
+        itemType = type; itemName = name; itemTime = time;
         open();
     }
 
@@ -43,15 +43,20 @@ Popup {
 
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 20
-                // DELETE
                 RoundButton { width: 50; icon: "delete"; color: "#FF6B6B"; iconColor: "white"; onClicked: popup.close() }
-                // EDIT
+
                 RoundButton {
                     width: 50; icon: "edit"; color: "#E9E9E9"; iconColor: accentColor;
                     onClicked: {
                         popup.close();
-                        if(itemType === "alarm") addAlarmOverlay.open()
-                        else addTimerOverlay.open()
+                        if(itemType === "alarm") {
+                            // Open Alarm Overlay with data
+                            // addAlarmOverlay.openForEdit(...)
+                            addAlarmOverlay.open();
+                        } else {
+                            // OPEN TIMER OVERLAY IN EDIT MODE
+                            addTimerOverlay.openForEdit({name: itemName, desc: "Edited Timer"});
+                        }
                     }
                 }
             }

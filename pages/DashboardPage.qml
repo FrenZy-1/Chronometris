@@ -12,7 +12,7 @@ Flickable {
     property var theme
     property color accentColor
 
-    // --- THIS WAS MISSING, CAUSING THE MAIN.QML ERROR ---
+    // Define signal so Main.qml can connect to it
     signal editRequested(string type, string name, string time)
 
     ColumnLayout {
@@ -85,7 +85,6 @@ Flickable {
         // --- 3. WEEKLY HEATMAP ---
         ColumnLayout {
             Layout.fillWidth: true; Layout.margins: 25; spacing: 10
-            Layout.alignment: Qt.AlignHCenter
             Text { text: "Weekly Activity"; font.family: "Montserrat"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
             RowLayout {
