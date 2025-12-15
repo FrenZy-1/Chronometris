@@ -13,22 +13,23 @@ Flickable {
     ColumnLayout {
         id: content
         width: parent.width
-        spacing: 20
+        spacing: 10
 
-        // Header
-        Rectangle {
-            Layout.fillWidth: true
-            height: 60
-            color: theme.idleColor
-            Text {
-                anchors.centerIn: parent; text: "ALARMS"; font.family: "Montserrat"; font.pixelSize: 24; font.weight: Font.Bold; color: "white"
-            }
-        }
+        // // Header
+        // Rectangle {
+        //     Layout.fillWidth: true
+        //     height: 60
+        //     color: theme.idleColor
+        //     Text {
+        //         anchors.centerIn: parent; text: "ALARMS"; font.family: "Montserrat"; font.pixelSize: 24; font.weight: Font.Bold; color: "white"
+        //     }
+        // }
 
         // Active Alarm
         Column {
             Layout.alignment: Qt.AlignHCenter
             spacing: 5
+            Layout.topMargin: 0
             Text { text: "Upcoming Alarm:"; font.pixelSize: 14; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: "ALARM NAME"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: "Description..."; font.pixelSize: 16; font.family: "Montserrat"; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }

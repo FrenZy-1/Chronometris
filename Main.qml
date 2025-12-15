@@ -1,6 +1,6 @@
-import QtQuick 2.15
-import QtQuick.Controls 2.15
-import QtQuick.Layouts 1.15
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 import "components"
 import "pages"
 import "overlays"
@@ -11,23 +11,24 @@ ApplicationWindow {
     width: 440
     height: 1000
     title: "Chronométris"
-    color: theme.mainBackgroundColor
+    color: appTheme.mainBackgroundColor
 
-    ThemeManager { id: theme }
+    property alias appTheme: themeManager
+    ThemeManager { id: themeManager }
 
-    // TOP HEADER (Page Title)
+    // TOP HEADER
     Rectangle {
         id: topHeader
         anchors.top: parent.top
         width: parent.width
-        height: 80 // Space for status bar + title
-        color: theme.idleColor
+        height: 80
+        color: appTheme.idleColor
         z: 100
 
         Text {
             anchors.centerIn: parent
             anchors.verticalCenterOffset: 10
-            text: viewPager.currentItem.title || "CHRONOMÉTRIS"
+            text: viewPager.currentItem ? viewPager.currentItem.title : "CHRONOMÉTRIS"
             color: "white"
             font.family: "Montserrat"
             font.pixelSize: 24
@@ -35,7 +36,7 @@ ApplicationWindow {
             font.capitalization: Font.AllUppercase
         }
 
-        // Settings/Menu Icon (Right)
+        // Settings/Menu Icon
         Rectangle {
             width: 36; height: 36
             radius: 10
@@ -67,30 +68,23 @@ ApplicationWindow {
         anchors.left: parent.left
         anchors.right: parent.right
         clip: true
-        interactive: false // Disable swipe gesture if you want strict tab navigation
+        interactive: true // Swipe Enabled
 
-        // 1. Dashboard
         DashboardPage {
             property string title: "DASHBOARD"
-            theme: window.theme
+            theme: window.appTheme
         }
-
-        // 2. Timer
         TimerPage {
             property string title: "TIMERS"
-            theme: window.theme
+            theme: window.appTheme
         }
-
-        // 3. Alarms
         AlarmsPage {
             property string title: "ALARMS"
-            theme: window.theme
+            theme: window.appTheme
         }
-
-        // 4. Analytics
         AnalyticsPage {
             property string title: "ANALYTICS"
-            theme: window.theme
+            theme: window.appTheme
         }
     }
 
@@ -99,21 +93,9 @@ ApplicationWindow {
         id: bottomNav
         anchors.bottom: parent.bottom
         width: parent.width
-        height: 100 // Taller for bottom padding
-        color: "transparent" // Floating look, or set theme.mainBackgroundColor
+        height: 90
+        color: appTheme.mainBackgroundColor
         z: 100
-
-        // Green Pill Container background (Optional, based on your screenshot it looks like individual pills)
-        // But for structure, we use a RowLayout
-
-        Rectangle {
-            anchors.fill: parent
-            color: theme.idleColor // The green bar at the bottom
-
-            // Curve the top corners if desired
-            radius: 30
-            Rectangle { anchors.bottom: parent.bottom; width: parent.width; height: 30; color: theme.idleColor } // Fill bottom corners
-        }
 
         RowLayout {
             anchors.centerIn: parent
@@ -135,34 +117,36 @@ ApplicationWindow {
 
                     property bool isActive: viewPager.currentIndex === modelData.pageIndex
 
-                    // Active Circle Indicator
+                    // Active Background Pill
                     Rectangle {
                         anchors.centerIn: parent
-                        width: 50; height: 50; radius: 25
-                        color: "white"
-                        opacity: isActive ? 0.2 : 0
+                        width: 60; height: 50; radius: 25
+                        color: appTheme.idleColor
+                        opacity: isActive ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 200 } }
                     }
 
                     Column {
                         anchors.centerIn: parent
-                        spacing: 4
+                        spacing: 2
 
-                        Image {
+                        // REPLACED: Use ColoredIcon to fix black icons
+                        ColoredIcon {
                             source: "assets/icons/" + modelData.icon + ".svg"
                             width: 24
                             height: 24
                             anchors.horizontalCenter: parent.horizontalCenter
-                            opacity: isActive ? 1.0 : 0.6
+                            // White if active, Green if inactive
+                            color: isActive ? "white" : appTheme.idleColor
                         }
 
                         Text {
                             text: modelData.name
                             font.family: "Montserrat"
                             font.pixelSize: 10
-                            color: "white"
+                            color: isActive ? "white" : appTheme.idleColor
                             font.weight: isActive ? Font.Bold : Font.Normal
-                            opacity: isActive ? 1.0 : 0.6
+                            opacity: isActive ? 1.0 : 0.0
                         }
                     }
 
@@ -175,5 +159,5 @@ ApplicationWindow {
         }
     }
 
-    AboutOverlay { id: aboutOverlay; theme: window.theme }
+    AboutOverlay { id: aboutOverlay; theme: window.appTheme }
 }

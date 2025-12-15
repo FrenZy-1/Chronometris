@@ -7,28 +7,28 @@ Flickable {
     id: timerPage
     contentHeight: content.height + 100
     contentWidth: width
+    boundsBehavior: Flickable.StopAtBounds // Helps with swipe feel
 
     property var theme
 
     ColumnLayout {
         id: content
         width: parent.width
-        spacing: 16
+        spacing: 10 // Reduced spacing
 
-        // Header
-        Rectangle {
-            Layout.fillWidth: true
-            height: 60
-            color: theme.idleColor
+        // Running Timer Section
+        Column {
+            Layout.alignment: Qt.AlignHCenter
+            spacing: 5
+            Layout.topMargin: 20 // Adjust this if you want it closer to header
 
             Text {
-                anchors.centerIn: parent
-                text: "TIMERS"
-                font.family: "Montserrat"
-                font.pixelSize: 24
-                font.weight: Font.Bold
-                color: "white"
-            }
+                text: "Running Timer:";
+                font.pixelSize: 14;
+                font.family: "Montserrat";
+                color: theme.textPrimary;
+                font.weight: Font.Bold;
+                anchors.horizontalCenter: parent.horizontalCenter }
 
             // Menu Icon placeholder
             Rectangle {
@@ -46,7 +46,7 @@ Flickable {
         Column {
             Layout.alignment: Qt.AlignHCenter
             spacing: 5
-            Layout.topMargin: 10
+            Layout.topMargin: 0
 
             Text { text: "Running Timer:"; font.pixelSize: 14; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Bold; anchors.horizontalCenter: parent.horizontalCenter }
             Text { text: "TIMER NAME"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; anchors.horizontalCenter: parent.horizontalCenter }

@@ -33,6 +33,7 @@ qt_add_qml_module(appChronometris
         components/TimerProgressCircle.qml
         # components/TopBar.qml
         # components/SvgIcon.qml
+        components/ColoredIcon.qml
 
         pages/AlarmsPage.qml
         pages/AnalyticsPage.qml
@@ -69,6 +70,7 @@ qt_add_qml_module(appChronometris
         assets/icons/timer.svg
 
         assets/logo/Logo.png
+        QML_FILES components/ColoredIcon.qml
 )
 
 target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql)
