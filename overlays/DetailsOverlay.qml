@@ -13,12 +13,25 @@ Popup {
 
     property var theme
     property color accentColor
+
+    // Data Properties
     property string itemType: "alarm"
     property string itemName: ""
     property string itemDesc: ""
+    property var itemConfig: ({}) // Store the full config object
+    property int itemId: -1       // Store the Database ID
 
-    function openWithData(type, name, desc) {
-        itemType = type; itemName = name; itemDesc = desc;
+    // --- OPEN FUNCTION (MATCHING MAIN.QML SIGNAL) ---
+    function openWithData(type, name, config, id) {
+        itemType = type;
+        itemName = name;
+        itemConfig = config; // Save config for editing later
+        itemId = id;         // Save ID for editing/deleting
+
+        // Extract description safely
+        if (config && config.desc) itemDesc = config.desc;
+        else itemDesc = "";
+
         open();
     }
 
@@ -28,27 +41,67 @@ Popup {
         ColumnLayout {
             anchors.fill: parent; anchors.margins: 20; spacing: 15
 
-            // FIXED SYNTAX: font.weight
-            Text { text: "DETAILS"; font.weight: Font.ExtraBold; font.pixelSize: 24; color: "white"; Layout.alignment: Qt.AlignHCenter }
+            Text {
+                text: "DETAILS";
+                font.family: "Montserrat"; font.weight: Font.ExtraBold; font.pixelSize: 24;
+                color: "white"; Layout.alignment: Qt.AlignHCenter
+            }
             Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
             Column {
                 Layout.alignment: Qt.AlignHCenter; spacing: 5
-                Text { text: itemName; font.bold: true; font.pixelSize: 20; color: "white"; anchors.horizontalCenter: parent.horizontalCenter }
-                Text { text: itemDesc; font.pixelSize: 14; color: "white"; opacity: 0.8; anchors.horizontalCenter: parent.horizontalCenter }
+
+                Text {
+                    text: itemName;
+                    font.family: "Montserrat"; font.bold: true; font.pixelSize: 20;
+                    color: "white"; anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: itemDesc;
+                    font.family: "Montserrat"; font.pixelSize: 14;
+                    color: "white"; opacity: 0.8; anchors.horizontalCenter: parent.horizontalCenter;
+                    wrapMode: Text.Wrap; width: 250; horizontalAlignment: Text.AlignHCenter
+                }
+
+                // Show Ringtones if present
+                Text {
+                    visible: itemConfig.mainRingtone !== undefined && itemConfig.mainRingtone !== ""
+                    text: "🎵 " + (itemConfig.mainRingtone ? itemConfig.mainRingtone.split("/").pop() : "")
+                    font.pixelSize: 10; color: "white"; anchors.horizontalCenter: parent.horizontalCenter
+                }
             }
 
             Item { Layout.fillHeight: true }
 
+            // --- ACTION BUTTONS ---
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 20
-                RoundButton { width: 50; icon: "delete"; color: "#FF6B6B"; iconColor: "white"; onClicked: popup.close() }
+
+                // DELETE BUTTON
+                RoundButton {
+                    width: 50; icon: "delete"; color: "#FF6B6B"; iconColor: "white";
+                    onClicked: {
+                        if(itemType === "alarm") engine.deleteAlarm(itemId);
+                        else engine.deleteTimer(itemId);
+                        popup.close();
+                    }
+                }
+
+                // EDIT BUTTON
                 RoundButton {
                     width: 50; icon: "edit"; color: "#E9E9E9"; iconColor: accentColor;
                     onClicked: {
                         popup.close();
-                        if(itemType === "alarm") addAlarmOverlay.open()
-                        else addTimerOverlay.open() // In real app pass data
+                        // Construct the full data object needed by the Edit Overlay
+                        var data = {
+                            id: itemId,
+                            name: itemName,
+                            config: itemConfig // Pass the full config back
+                        };
+
+                        if(itemType === "alarm") addAlarmOverlay.openForEdit(data);
+                        else addTimerOverlay.openForEdit(data);
                     }
                 }
             }

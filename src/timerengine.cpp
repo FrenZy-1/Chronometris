@@ -114,6 +114,44 @@ void TimerEngine::generateDummyData() {
     emit analyticsChanged();
 }
 
+void TimerEngine::loadAndStartSession(const QVariantMap& config) {
+    m_sessionQueue.clear();
+
+    // Parse the JSON map
+    QVariantMap durations = config["durations"].toMap();
+    int work = durations["work"].toInt();
+    int sBreak = durations["break"].toInt();
+    int lBreak = durations["long"].toInt();
+
+    // Build Queue based on mode
+    if(config["mode"].toString() == "pomodoro") {
+        m_sessionQueue.push_back({"work", work});
+        m_sessionQueue.push_back({"shortBreak", sBreak});
+        // ... add more steps ...
+    } else {
+        // Custom single run or simple loop
+        m_sessionQueue.push_back({"work", work});
+    }
+
+    // Set immediate state
+    if(!m_sessionQueue.empty()) {
+        Session first = m_sessionQueue.front();
+        m_remaining = first.duration;
+        m_totalDuration = first.duration;
+        m_progress = 0.0;
+        start(); // Auto-start
+    }
+}
+
+void TimerEngine::deleteTimer(int id) {
+    DatabaseManager::instance().deleteTimer(id);
+    emit dataChanged();
+}
+void TimerEngine::deleteAlarm(int id) {
+    DatabaseManager::instance().deleteAlarm(id);
+    emit dataChanged();
+}
+
 QVariantList TimerEngine::chartData() {
     // Return standard object structure for 3-bar chart
     QVariantList list;

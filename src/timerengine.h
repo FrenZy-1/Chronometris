@@ -57,6 +57,9 @@ public:
     Q_INVOKABLE void addTimer(const QVariantMap& data);
     Q_INVOKABLE void addAlarm(const QVariantMap& data);
     Q_INVOKABLE void generateDummyData();
+    Q_INVOKABLE void loadAndStartSession(const QVariantMap& timerConfig);
+    Q_INVOKABLE void deleteTimer(int id);
+    Q_INVOKABLE void deleteAlarm(int id);
 
     QVariantList timersList();
     QVariantList alarmsList();

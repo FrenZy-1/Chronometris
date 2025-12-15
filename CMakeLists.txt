@@ -28,6 +28,9 @@ qt_add_qml_module(appChronometris
         components/TimerProgressCircle.qml
         components/ColoredIcon.qml
         components/TimePicker.qml
+        components/ColoredIcon.qml
+        components/TimePIcker.qml
+        components/DatePicker.qml
 
         pages/AlarmsPage.qml
         pages/AnalyticsPage.qml
@@ -64,8 +67,6 @@ qt_add_qml_module(appChronometris
         assets/icons/timer.svg
 
         assets/logo/Logo.png
-        QML_FILES components/ColoredIcon.qml
-        QML_FILES components/TimePIcker.qml
 )
 
 target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql Qt6::QuickControls2 Qt6::QuickDialogs2)

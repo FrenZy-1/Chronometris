@@ -12,27 +12,39 @@ Flickable {
     property var theme
     property color accentColor
 
-    // --- ADD THIS LINE ---
-    signal editRequested(string type, string name, string time)
+    // Signal: Type, Name, ConfigObject, ID
+    signal editRequested(string type, string name, var config, int id)
 
     ColumnLayout {
         id: content
         width: parent.width
         spacing: 10
 
-        // ... (The rest of your TimerPage code) ...
-        // Ensure you paste the full content from previous steps here
-        // If you need the full file again, let me know, but adding the signal line fixes the specific Main.qml error.
-
         // --- 1. RUNNING TIMER (Hidden if Stopped) ---
         ColumnLayout {
             visible: engine.currentState !== "stopped"
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignHCenter
-            // ... (Timer Text & Controls) ...
-            Text { text: engine.currentType === "work" ? "WORK SESSION" : "BREAK"; font.pixelSize: 28; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.ExtraBold; Layout.alignment: Qt.AlignHCenter }
-            Text { text: engine.currentState; font.pixelSize: 24; font.family: "Montserrat"; color: theme.textPrimary; font.weight: Font.Normal; font.capitalization: Font.Capitalize; Layout.alignment: Qt.AlignHCenter }
-            Text { text: "Working..."; font.pixelSize: 16; font.family: "Montserrat"; color: theme.textSecondary; Layout.alignment: Qt.AlignHCenter }
+            Layout.topMargin: 20
+            spacing: 5
+
+            Text {
+                text: engine.currentType === "work" ? "WORK SESSION" : "BREAK";
+                font.pixelSize: 28; font.family: "Montserrat";
+                color: theme.textPrimary; font.weight: Font.ExtraBold;
+                Layout.alignment: Qt.AlignHCenter
+            }
+            Text {
+                text: engine.currentState;
+                font.pixelSize: 24; font.family: "Montserrat";
+                color: theme.textPrimary; font.weight: Font.Normal;
+                font.capitalization: Font.Capitalize; Layout.alignment: Qt.AlignHCenter
+            }
+            Text {
+                text: "Working...";
+                font.pixelSize: 16; font.family: "Montserrat";
+                color: theme.textSecondary; Layout.alignment: Qt.AlignHCenter
+            }
 
             // Controls
             RowLayout {
@@ -48,10 +60,14 @@ Flickable {
                 RoundButton { icon: "fast_forward"; text: "Next"; color: accentColor; onClicked: engine.skip() }
             }
 
-            Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20; Layout.topMargin: 15 }
+            Rectangle {
+                Layout.fillWidth: true; height: 1;
+                color: theme.borderColor; opacity: 0.3;
+                Layout.margins: 20; Layout.topMargin: 15
+            }
         }
 
-        // --- 2. LISTS (Always Visible) ---
+        // --- 2. SAVED TIMER LIST ---
         ColumnLayout {
             Layout.fillWidth: true; Layout.margins: 20; spacing: 10
             Layout.topMargin: engine.currentState === "stopped" ? 40 : 0
@@ -61,26 +77,46 @@ Flickable {
                 Layout.fillWidth: true; height: 35; color: accentColor; radius: 5
                 RowLayout {
                     anchors.fill: parent; anchors.margins: 10
-                    Text { text: "Upcoming"; font.family: "Montserrat"; font.bold: true; color: "white"; Layout.fillWidth: true }
-                    Rectangle { width: 60; height: 20; color: "transparent"; border.color: "white"; radius: 4; Text { anchors.centerIn: parent; text: "Rows: 3"; color: "white"; font.pixelSize: 10 } }
+                    Text { text: "Saved Timers"; font.family: "Montserrat"; font.bold: true; color: "white"; Layout.fillWidth: true }
+                    Text { text: engine.timersList.length; font.family: "Montserrat"; color: "white" }
                 }
             }
 
-            // List Items
+            // The List
             Repeater {
-                model: 3
+                model: engine.timersList // Live Data
+
                 Rectangle {
-                    Layout.fillWidth: true; height: 40; color: theme.isDarkMode ? "#2A2A2A" : "white"; radius: 5; border.color: theme.borderColor; border.width: 1
+                    Layout.fillWidth: true; height: 50
+                    color: theme.isDarkMode ? "#2A2A2A" : "white"
+                    radius: 5; border.color: theme.borderColor; border.width: 1
+
                     RowLayout {
                         anchors.fill: parent; anchors.margins: 10
-                        Text { text: "Work Session"; font.family: "Montserrat"; color: theme.textPrimary; Layout.fillWidth: true }
-                        Text { text: "25:00"; font.family: "Montserrat"; color: theme.textSecondary }
+                        Column {
+                            Layout.fillWidth: true
+                            Text {
+                                text: modelData.name;
+                                font.family: "Montserrat"; font.bold: true; color: theme.textPrimary
+                            }
+                            Text {
+                                text: (modelData.config.mode === "pomodoro") ? "Pomodoro" : "Custom Cycle";
+                                font.family: "Montserrat"; font.pixelSize: 10; color: theme.textSecondary
+                            }
+                        }
+
+                        // Play Button (Starts THIS timer)
+                        RoundButton {
+                            width: 30; height: 30; icon: "play_arrow"; color: accentColor;
+                            onClicked: engine.loadAndStartSession(modelData.config)
+                        }
                     }
 
-                    // EDIT TRIGGER
+                    // Interaction
                     MouseArea {
                         anchors.fill: parent
-                        onDoubleClicked: timerPage.editRequested("timer", "Work Session", "25:00")
+                        // PASS DATA + CONFIG + ID
+                        onDoubleClicked: timerPage.editRequested("timer", modelData.name, modelData.config, modelData.id)
                     }
                 }
             }

@@ -14,45 +14,45 @@ Popup {
 
     property var theme
     property color accentColor
+
+    property int editId: -1 // CRITICAL
+    property bool isEditMode: false
+    property bool isRepeat: false
     property string repeatMode: "daily"
     property var selectedDays: []
     property string selectedRingtone: ""
-    property bool isEditMode: false
 
     function reset() {
         if (!isEditMode) {
             aName.text = ""; aDesc.text = ""; selectedRingtone = "";
-            repeatMode = "daily"; selectedDays = [];
+            isRepeat = false; repeatMode = "daily"; selectedDays = [];
+            editId = -1;
         }
     }
 
-    // Support Editing Alarms
+    // EDIT LOADING
     function openForEdit(data) {
         isEditMode = true;
+        editId = data.id; // Capture ID
         aName.text = data.name || "";
-        aDesc.text = data.desc || "";
-        selectedRingtone = data.ringtone || "";
-        // Parse time/days here in future
+        aDesc.text = data.config.desc || ""; // Read JSON
+        selectedRingtone = data.config.ringtone || "";
         open();
     }
 
-    // Auto-reset when closed so "Add" is fresh next time
     onClosed: { isEditMode = false; reset(); }
 
     FileDialog {
-        id: fileDialog; title: "Select Ringtone"; nameFilters: ["Audio files (*.mp3 *.wav *.ogg)"]
-        onAccepted: { selectedRingtone = fileDialog.selectedFile; }
+        id: fileDialog; title: "Select Ringtone"; nameFilters: ["*.mp3","*.wav"]
+        onAccepted: selectedRingtone = fileDialog.selectedFile
     }
 
-    function toggleDay(day) {
-        var idx = selectedDays.indexOf(day);
-        if (idx >= 0) selectedDays.splice(idx, 1);
-        else selectedDays.push(day);
-        daysRepeater.model = 7; // reset view
-        daysRepeater.model = ["M","T","W","T","F","S","S"];
+    function toggleDay(idx) {
+        var i = selectedDays.indexOf(idx);
+        if (i!==-1) selectedDays.splice(i,1); else selectedDays.push(idx);
+        daysRepeater.model = 7; daysRepeater.model = ["M","T","W","T","F","S","S"];
     }
-
-    function isDaySelected(index) { return selectedDays.indexOf(index) !== -1; }
+    function isDaySelected(i) { return selectedDays.indexOf(i) !== -1; }
 
     Rectangle {
         anchors.fill: parent; radius: 20; color: accentColor; border.width: 4; border.color: "white"
@@ -73,94 +73,59 @@ Popup {
 
                 ColumnLayout {
                     Layout.fillWidth: true; spacing: 8
-                    // Name Field
-                    TextField {
-                        id: aName; Layout.fillWidth: true; placeholderText: "Alarm name";
-                        selectByMouse: true; color: "black"; background: Rectangle { radius: 5; color: "#E9E9E9" }
-                    }
-                    // Description Field
-                    TextField {
-                        id: aDesc; Layout.fillWidth: true; placeholderText: "Description";
-                        selectByMouse: true; color: "black"; background: Rectangle { radius: 5; color: "#E9E9E9" }
-                    }
-                    // Ringtone Row
+                    TextField { id: aName; Layout.fillWidth: true; placeholderText: "Alarm name"; selectByMouse: true; color: "black"; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                    TextField { id: aDesc; Layout.fillWidth: true; placeholderText: "Description"; selectByMouse: true; color: "black"; background: Rectangle{radius:5;color:"#E9E9E9"} }
                     RowLayout {
-                        Layout.fillWidth: true
-                        TextField {
-                            Layout.fillWidth: true; readOnly: true;
-                            text: selectedRingtone; placeholderText: "Ringtone";
-                            background: Rectangle { radius: 5; color: "#E9E9E9" }
-                        }
+                        TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "Ringtone"; background: Rectangle{radius:5;color:"#E9E9E9"} }
                         Button { text: "📂"; onClicked: fileDialog.open() }
                     }
                 }
 
-                // Time Picker
                 TimePicker { id: aTime; theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
 
-                // Repeat Logic
+                // REPEAT SECTION
                 RowLayout {
-                    Text { text: "Repeat?"; color: "white"; font.bold: true }
-                    Item { Layout.fillWidth: true }
-                    Row {
-                        Rectangle { width: 70; height: 30; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"
-                            Text { anchors.centerIn: parent; text: "Daily"; color: repeatMode==="daily"?accentColor:"white"; font.bold: true }
-                            MouseArea { anchors.fill: parent; onClicked: repeatMode="daily" }
-                        }
-                        Rectangle { width: 70; height: 30; color: repeatMode==="custom"?"white":"transparent"; radius: 4; border.color:"white"
-                            Text { anchors.centerIn: parent; text: "Custom"; color: repeatMode==="custom"?accentColor:"white" }
-                            MouseArea { anchors.fill: parent; onClicked: repeatMode="custom" }
-                        }
-                    }
+                    CheckBox { id: repeatCheck; checked: isRepeat; onCheckedChanged: isRepeat = checked }
+                    Text { text: "Repeat"; color: "white"; font.bold: true }
                 }
 
-                // Days (Visible if Custom)
-                RowLayout {
-                    visible: repeatMode === "custom"
-                    Layout.alignment: Qt.AlignHCenter
-                    Repeater {
-                        id: daysRepeater
-                        model: ["M","T","W","T","F","S","S"]
-                        Rectangle {
-                            width: 30; height: 30; radius: 15
-                            color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
-                            Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
-                            MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
+                ColumnLayout {
+                    visible: isRepeat
+                    RowLayout {
+                        Rectangle { width: 70; height: 30; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Daily";color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="daily"} }
+                        Rectangle { width: 70; height: 30; color: repeatMode==="custom"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Custom";color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="custom"} }
+                    }
+                    RowLayout {
+                        visible: repeatMode === "custom"
+                        Layout.alignment: Qt.AlignHCenter
+                        Repeater {
+                            id: daysRepeater; model: ["M","T","W","T","F","S","S"]
+                            Rectangle {
+                                width: 30; height: 30; radius: 15
+                                color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
+                                Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
+                                MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
+                            }
                         }
                     }
                 }
 
-                // Delete Checkbox
-                RowLayout {
-                    CheckBox {
-                        text: "Delete after ringing?"
-                        contentItem: Text { text: "Delete after ringing?"; color: "white"; leftPadding: 10; font.pixelSize: 14 }
-                    }
-                }
+                RowLayout { CheckBox { text: "Delete after ringing?"; contentItem: Text { text: "Delete after ringing?"; color: "white"; leftPadding: 10 } } }
 
-                // Action Buttons
                 Item { Layout.fillHeight: true }
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter; spacing: 40
-
-                    // Cancel
-                    Rectangle {
-                        width: 50; height: 50; radius: 25; color: "#E9E9E9";
-                        Text { anchors.centerIn: parent; text: "✕"; font.pixelSize: 20; color: "#797979" }
-                        MouseArea { anchors.fill: parent; onClicked: popup.close() }
-                    }
-
-                    // Save
-                    Rectangle {
-                        width: 50; height: 50; radius: 25; color: "#E9E9E9";
-                        Text { anchors.centerIn: parent; text: "✓"; font.pixelSize: 24; color: accentColor; font.bold: true }
+                    Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✕" } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
+                    Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✓"; color: accentColor }
                         MouseArea {
                             anchors.fill: parent;
                             onClicked: {
-                                // Construct JSON for "days"
-                                var dayStr = (repeatMode==="daily") ? "Daily" : JSON.stringify(selectedDays);
-                                // Save to DB
-                                engine.addAlarm({name: aName.text, time: aTime.hours+":"+aTime.minutes, days: dayStr, ringtone: selectedRingtone, desc: aDesc.text});
+                                engine.addAlarm({
+                                    "id": editId, // Pass ID for update
+                                    "name": aName.text, "desc": aDesc.text, "ringtone": selectedRingtone,
+                                    "time": aTime.hours+":"+aTime.minutes,
+                                    "days": isRepeat ? (repeatMode==="daily"?"Daily":JSON.stringify(selectedDays)) : "Once"
+                                });
                                 popup.close();
                             }
                         }

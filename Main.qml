@@ -70,17 +70,17 @@ ApplicationWindow {
             property string title: "DASHBOARD"
             theme: window.appTheme; accentColor: window.currentAccentColor
             // Connect signal: Open details when an item is double-clicked
-            onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
+            onEditRequested: (type, name, config, id) => detailsOverlay.openWithData(type, name, config, id)
         }
         TimerPage {
             property string title: "TIMERS"
             theme: window.appTheme; accentColor: window.currentAccentColor
-            onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
+            onEditRequested: (type, name, config, id) => detailsOverlay.openWithData(type, name, config, id)
         }
         AlarmsPage {
             property string title: "ALARMS"
             theme: window.appTheme; accentColor: window.currentAccentColor
-            onEditRequested: (type, name, time) => detailsOverlay.openWithData(type, name, time)
+            onEditRequested: (type, name, config, id) => detailsOverlay.openWithData(type, name, config, id)
         }
         AnalyticsPage {
             property string title: "ANALYTICS"
@@ -135,7 +135,7 @@ ApplicationWindow {
                             anchors.centerIn: parent; spacing: 2
                             ColoredIcon {
                                 source: "assets/icons/" + modelData.icon + ".svg"
-                                width: 40; height: 40
+                                width: 24; height: 24 // EXPLICIT SIZE
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                             }

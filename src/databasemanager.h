@@ -26,6 +26,9 @@ public:
     QVariantList getTimers();
     QVariantList getAlarms();
 
+    void deleteTimer(int id);
+    void deleteAlarm(int id);
+
     void generateDummyData();
 
 private:

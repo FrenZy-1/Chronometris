@@ -71,33 +71,52 @@ Flickable {
             }
         }
 
-        // BAR CHART (Fixed Layout Error)
+        // BAR CHART (Fixed Geometry)
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
             Text { text: "Weekly Hours:"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
 
-            RowLayout {
-                Layout.fillWidth: true; height: 140; spacing: 15; Layout.alignment: Qt.AlignHCenter
-                Repeater {
-                    model: engine.chartData // [{work:5, short:2, long:1}, ...]
+            // Fixed Height Container
+            Item {
+                Layout.fillWidth: true; Layout.preferredHeight: 140
 
-                    // Each Day Column
-                    Column {
-                        Layout.alignment: Qt.AlignBottom
-                        spacing: 2
+                RowLayout {
+                    anchors.centerIn: parent; spacing: 15
 
-                        // Container for 3 bars side-by-side
-                        Row {
-                            spacing: 2
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            Rectangle { width: 6; height: modelData.work * 10; color: theme.workFill; radius: 2 }
-                            Rectangle { width: 6; height: modelData.short * 10; color: theme.shortBreakFill; radius: 2 }
-                            Rectangle { width: 6; height: modelData.long * 10; color: theme.longBreakFill; radius: 2 }
-                        }
+                    Repeater {
+                        model: engine.chartData // [{work:2, short:1, long:0}, ...]
 
-                        Text {
-                            text: ["M","T","W","T","F","S","S"][index]
-                            font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter
+                        Column {
+                            spacing: 5
+
+                            // Bar Container (Align Bottom)
+                            Item {
+                                width: 30; height: 100
+
+                                // Work (Blue)
+                                Rectangle {
+                                    width: 8; radius: 2; color: theme.workFill
+                                    height: Math.min(modelData.work * 10, parent.height)
+                                    anchors.bottom: parent.bottom; anchors.left: parent.left
+                                }
+                                // Short (Pink)
+                                Rectangle {
+                                    width: 8; radius: 2; color: theme.shortBreakFill
+                                    height: Math.min(modelData.short * 10, parent.height)
+                                    anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
+                                }
+                                // Long (Purple)
+                                Rectangle {
+                                    width: 8; radius: 2; color: theme.longBreakFill
+                                    height: Math.min(modelData.long * 10, parent.height)
+                                    anchors.bottom: parent.bottom; anchors.right: parent.right
+                                }
+                            }
+
+                            Text {
+                                text: ["M","T","W","T","F","S","S"][index];
+                                font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter
+                            }
                         }
                     }
                 }
