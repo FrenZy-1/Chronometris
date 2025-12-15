@@ -17,12 +17,28 @@ Flickable {
         ColumnLayout {
             visible: engine.currentState !== "stopped"
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 20
-            Text { text: engine.currentType==="work"?"WORK SESSION":"BREAK"; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
-            Text { text: engine.currentState; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH3; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter; font.capitalization: Font.Capitalize }
+
+            Text {
+                text: engine.currentType === "work" ? "WORK SESSION" :
+                      (engine.currentType === "longBreak" ? "LONG BREAK" : "SHORT BREAK");
+                font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2;
+                font.weight: theme.fontWeightExtraBold; color: theme.textPrimary;
+                Layout.alignment: Qt.AlignHCenter
+            }
+            Text {
+                text: engine.currentState;
+                font.family: theme.mainFont; font.pixelSize: theme.fontSizeH3;
+                color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter;
+                font.capitalization: Font.Capitalize
+            }
+
+            // CONTROLS
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 15; Layout.topMargin: 10
                 RoundButton { icon: engine.currentState==="running"?"pause":"play_arrow"; color: accentColor; onClicked: engine.currentState==="running"?engine.pause():engine.start() }
                 RoundButton { icon: "stop"; color: accentColor; onClicked: engine.stop() }
+                RoundButton { icon: "fast_forward"; color: accentColor; onClicked: engine.skip() }
+                RoundButton { icon: "skip_next"; color: accentColor; onClicked: engine.stop() }
             }
         }
 
@@ -31,30 +47,31 @@ Flickable {
             Layout.fillWidth: true; Layout.margins: 20; spacing: 10
             Layout.topMargin: engine.currentState === "stopped" ? 20 : 0
 
-            Rectangle { Layout.fillWidth: true; height: 35; color: accentColor; radius: 5
-                RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Saved Timers";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} Text{text:engine.timersList.length;font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody;color:"white"} }
+            Rectangle {
+                Layout.fillWidth: true; height: 35; color: accentColor; radius: 5
+                RowLayout {
+                    anchors.fill: parent; anchors.margins: 10;
+                    Text{text:"Saved Timers";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true}
+                    Text{text:engine.timersList.length;font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody;color:"white"}
+                }
             }
 
             Repeater {
                 model: engine.timersList
                 Rectangle {
-                    // INCREASED HEIGHT FOR BREATHING ROOM
                     Layout.fillWidth: true; height: 60;
                     color: theme.isDarkMode?"#2A2A2A":"white"; radius: 5; border.color: theme.borderColor
 
+                    MouseArea { anchors.fill: parent; onDoubleClicked: timerPage.editRequested("timer", modelData.name, modelData.config, modelData.id) }
+
                     RowLayout {
                         anchors.fill: parent; anchors.margins: 10; spacing: 15
-
                         Column {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-
+                            Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter
                             Text {
-                                text: modelData.name
-                                font.family: theme.mainFont; font.weight: theme.fontWeightBold; color: theme.textPrimary; font.pixelSize: theme.fontSizeBody
-                                // PREVENT OVERFLOW
-                                width: parent.width
-                                elide: Text.ElideRight
+                                text: modelData.name; font.family: theme.mainFont; font.weight: theme.fontWeightBold;
+                                color: theme.textPrimary; font.pixelSize: theme.fontSizeBody;
+                                width: parent.width; elide: Text.ElideRight
                             }
                             Text {
                                 text: modelData.config.mode==="pomodoro"?"Pomodoro":"Custom";
@@ -62,43 +79,37 @@ Flickable {
                             }
                         }
 
-                        // FIXED SIZE PLAY BUTTON
                         RoundButton {
                             Layout.preferredWidth: 36; Layout.preferredHeight: 36
+                            width: 36; height: 36
                             Layout.alignment: Qt.AlignVCenter
-                            icon: "play_arrow"; color: accentColor
+                            icon: "play_arrow"; color: accentColor; iconColor: "white"
                             onClicked: engine.loadAndStartSession(modelData.config)
                         }
                     }
-                    MouseArea { anchors.fill: parent; onDoubleClicked: timerPage.editRequested("timer", modelData.name, modelData.config, modelData.id) }
                 }
             }
         }
 
-        // --- 3. RECENT HISTORY (Completed) ---
+        // --- 3. RECENT HISTORY ---
         ColumnLayout {
             Layout.fillWidth: true; Layout.margins: 20; spacing: 10
-
-            Rectangle { Layout.fillWidth: true; height: 35; color: "#797979"; radius: 5
+            Rectangle {
+                Layout.fillWidth: true; height: 35; color: "#797979"; radius: 5
                 RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Recent History";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} }
             }
-
             Repeater {
                 model: engine.historyList
                 Rectangle {
-                    Layout.fillWidth: true; height: 60;
-                    color: "transparent"; border.color: theme.borderColor; radius: 5
+                    Layout.fillWidth: true; height: 60; color: "transparent"; border.color: theme.borderColor; radius: 5
 
                     RowLayout {
                         anchors.fill: parent; anchors.margins: 10; spacing: 15
-
                         Column {
-                            Layout.fillWidth: true
-                            Layout.alignment: Qt.AlignVCenter
-
+                            Layout.fillWidth: true; Layout.alignment: Qt.AlignVCenter
                             Text {
-                                text: modelData.name
-                                font.family: theme.mainFont; color: theme.textPrimary; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody
+                                text: modelData.name; font.family: theme.mainFont; color: theme.textPrimary;
+                                font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody;
                                 width: parent.width; elide: Text.ElideRight
                             }
                             Text {
@@ -107,15 +118,14 @@ Flickable {
                             }
                         }
 
-                        // FIXED SIZE RE-RUN BUTTON
                         RoundButton {
                             Layout.preferredWidth: 36; Layout.preferredHeight: 36
+                            width: 36; height: 36
                             Layout.alignment: Qt.AlignVCenter
                             icon: "play_arrow"; color: "transparent"; iconColor: theme.textSecondary
                             onClicked: engine.loadAndStartSession(modelData.config)
                         }
                     }
-                    MouseArea { anchors.fill: parent; onDoubleClicked: timerPage.editRequested("timer", modelData.name, modelData.config, -1) }
                 }
             }
         }

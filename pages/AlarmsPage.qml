@@ -13,6 +13,7 @@ Flickable {
     ColumnLayout {
         id: content; width: parent.width; spacing: 15; Layout.topMargin: 20
 
+        // 1. UPCOMING
         ColumnLayout {
             visible: engine.isAlarmSoon
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 30; spacing: 5
@@ -28,6 +29,7 @@ Flickable {
             Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20; Layout.topMargin: 15 }
         }
 
+        // 2. ACTIVE
         ColumnLayout {
             Layout.fillWidth: true; Layout.margins: 20; spacing: 10
             Layout.topMargin: !engine.isAlarmSoon ? 40 : 0
@@ -43,6 +45,22 @@ Flickable {
                         Rectangle { width: 36; height: 20; radius: 10; color: accentColor; Rectangle{x:18;width:16;height:16;radius:8;color:"white";anchors.verticalCenter:parent.verticalCenter} }
                     }
                     MouseArea { anchors.fill: parent; onDoubleClicked: alarmPage.editRequested("alarm", modelData.name, modelData.config, modelData.id) }
+                }
+            }
+        }
+
+        // 3. TURNED OFF (Dummy)
+        ColumnLayout {
+            Layout.fillWidth: true; Layout.margins: 20; spacing: 10
+            Rectangle { Layout.fillWidth: true; height: 35; color: "#797979"; radius: 5
+                RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Turned Off";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} }
+            }
+            // Inactive Item
+            Rectangle {
+                Layout.fillWidth: true; height: 50; color: theme.isDarkMode?"#2A2A2A":"white"; radius: 5; border.color: theme.borderColor; opacity: 0.6
+                RowLayout { anchors.fill: parent; anchors.margins: 10
+                    Column { Layout.fillWidth: true; Text{text:"Weekend Hike";font.family: theme.mainFont; font.weight: theme.fontWeightBold; color:theme.textPrimary; font.pixelSize: theme.fontSizeBody} Text{text:"6:00 AM";font.family: theme.mainFont; color:theme.textSecondary;font.pixelSize:theme.fontSizeSmall} }
+                    Rectangle { width: 36; height: 20; radius: 10; color: "#CCC"; Rectangle{x:2;width:16;height:16;radius:8;color:"white";anchors.verticalCenter:parent.verticalCenter} }
                 }
             }
         }

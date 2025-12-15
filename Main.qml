@@ -32,7 +32,6 @@ ApplicationWindow {
             anchors.centerIn: parent; anchors.verticalCenterOffset: 10
             text: (viewPager.currentItem && viewPager.currentItem.title) ? viewPager.currentItem.title : "CHRONOMÉTRIS"
             color: "white"
-            // THEME FONTS
             font.family: themeManager.mainFont
             font.pixelSize: themeManager.fontSizeH3
             font.weight: themeManager.fontWeightBold
@@ -79,7 +78,7 @@ ApplicationWindow {
         }
     }
 
-    // --- FOOTER (FIXED VISUALS) ---
+    // --- FOOTER (FIXED) ---
     Item {
         id: bottomContainer
         width: parent.width * 0.9; height: 70
@@ -104,32 +103,32 @@ ApplicationWindow {
                         Layout.fillWidth: true; Layout.fillHeight: true
                         property bool isActive: viewPager.currentIndex === modelData.pageIndex
 
-                        // 1. CIRCLE INDICATOR (Centered, slightly shifted up)
+                        // 1. CIRCLE INDICATOR (Centered, shifted up)
                         Rectangle {
                             id: indicator
                             width: 45; height: 45; radius: 22.5
                             anchors.centerIn: parent
-                            anchors.verticalCenterOffset: -6 // Push up to make room for text
+                            anchors.verticalCenterOffset: -6
                             color: "white"
                             opacity: isActive ? 0.2 : 0
                             Behavior on opacity { NumberAnimation { duration: 200 } }
                         }
 
-                        // 2. ICON (Locked to the Center of the Circle)
+                        // 2. ICON (Aligned to Circle)
                         ColoredIcon {
                             id: navIcon
                             source: "assets/icons/" + modelData.icon + ".svg"
                             width: 55; height: 55
-                            anchors.centerIn: indicator // <--- KEY FIX: Align to circle, not parent
+                            anchors.centerIn: indicator
                             color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                         }
 
-                        // 3. TEXT (Anchored below the Circle)
+                        // 3. TEXT (Below Circle)
                         Text {
                             text: modelData.name
                             color: isActive ? "white" : Qt.rgba(1,1,1,0.6)
                             font.family: themeManager.mainFont
-                            font.pixelSize: 10 // Keep small for footer
+                            font.pixelSize: 10 // Footer text stays small
                             font.weight: isActive ? Font.Bold : Font.Normal
 
                             anchors.top: indicator.bottom

@@ -13,6 +13,8 @@ struct Session {
 
 class TimerEngine : public QObject {
     Q_OBJECT
+
+    // Properties
     Q_PROPERTY(double progress READ progress NOTIFY timeChanged)
     Q_PROPERTY(int timeRemaining READ timeRemaining NOTIFY timeChanged)
     Q_PROPERTY(QString timeRemainingString READ timeRemainingString NOTIFY timeChanged)
@@ -22,10 +24,12 @@ class TimerEngine : public QObject {
     Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
     Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
 
+    // Lists
     Q_PROPERTY(QVariantList timersList READ timersList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList alarmsList READ alarmsList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList historyList READ historyList NOTIFY analyticsChanged)
 
+    // Stats
     Q_PROPERTY(QString todayFocusString READ todayFocusString NOTIFY analyticsChanged)
     Q_PROPERTY(int todaySessionCount READ todaySessionCount NOTIFY analyticsChanged)
     Q_PROPERTY(int currentStreak READ currentStreak NOTIFY analyticsChanged)
@@ -34,6 +38,7 @@ class TimerEngine : public QObject {
 public:
     explicit TimerEngine(QObject *parent = nullptr);
 
+    // Getters
     double progress() const { return m_progress; }
     int timeRemaining() const { return m_remaining; }
     QString timeRemainingString() const;
@@ -52,6 +57,7 @@ public:
     QVariantList historyList();
     QVariantList chartData();
 
+    // Invokables
     Q_INVOKABLE void start();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void stop();
@@ -73,9 +79,12 @@ signals:
 private:
     void processTimer();
     void completeSession();
+    void refillQueue(); // <--- ADDED THIS
 
     QTimer *m_timer;
     std::deque<Session> m_sessionQueue;
+    QVariantMap m_activeConfig; // <--- ADDED THIS
+
     QString m_state = "stopped";
     int m_remaining = 1500;
     int m_totalDuration = 1500;
