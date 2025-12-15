@@ -15,7 +15,7 @@ Popup {
     property var theme
     property color accentColor
 
-    property int editId: -1 // CRITICAL
+    property int editId: -1
     property bool isEditMode: false
     property bool isRepeat: false
     property string repeatMode: "daily"
@@ -25,28 +25,23 @@ Popup {
 
     function reset() {
         if (!isEditMode) {
-            aName.text = ""; aDesc.text = ""; selectedRingtone = "";
-            isRepeat = false; repeatMode = "daily"; selectedDays = [];
-            editId = -1;
+            aName.text=""; aDesc.text=""; selectedRingtone="";
+            isRepeat=false; repeatMode="daily"; selectedDays=[];
+            editId=-1; selectedDateString="Today";
         }
     }
 
-    // EDIT LOADING
     function openForEdit(data) {
         isEditMode = true;
-        editId = data.id; // Capture ID
+        editId = data.id;
         aName.text = data.name || "";
-        aDesc.text = data.config.desc || ""; // Read JSON
+        aDesc.text = data.config.desc || "";
         selectedRingtone = data.config.ringtone || "";
         open();
     }
-
     onClosed: { isEditMode = false; reset(); }
 
-    FileDialog {
-        id: fileDialog; title: "Select Ringtone"; nameFilters: ["*.mp3","*.wav"]
-        onAccepted: selectedRingtone = fileDialog.selectedFile
-    }
+    FileDialog { id: fileDialog; title: "Select Ringtone"; nameFilters: ["*.mp3","*.wav"]; onAccepted: selectedRingtone = fileDialog.selectedFile }
 
     function toggleDay(idx) {
         var i = selectedDays.indexOf(idx);
@@ -57,41 +52,22 @@ Popup {
 
     Rectangle {
         anchors.fill: parent; radius: 20; color: accentColor; border.width: 4; border.color: "white"
-
         Flickable {
             anchors.fill: parent; anchors.margins: 20; contentHeight: contentCol.height; clip: true
-
             ColumnLayout {
-                id: contentCol
-                width: parent.width; spacing: 12
-
-                Text {
-                    Layout.alignment: Qt.AlignHCenter;
-                    text: isEditMode ? "EDIT ALARM" : "ADD ALARM"
-                    font.family: "Montserrat"; font.pixelSize: 28; font.weight: Font.ExtraBold; color: "white"
-                }
+                id: contentCol; width: parent.width; spacing: 12
+                Text { Layout.alignment: Qt.AlignHCenter; text: isEditMode?"EDIT ALARM":"ADD ALARM"; font.bold: true; font.pixelSize: 28; color: "white" }
                 Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
-                ColumnLayout {
-                    Layout.fillWidth: true; spacing: 8
-                    TextField { id: aName; Layout.fillWidth: true; placeholderText: "Alarm name"; selectByMouse: true; color: "black"; background: Rectangle{radius:5;color:"#E9E9E9"} }
-                    TextField { id: aDesc; Layout.fillWidth: true; placeholderText: "Description"; selectByMouse: true; color: "black"; background: Rectangle{radius:5;color:"#E9E9E9"} }
-                    RowLayout {
-                        TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "Ringtone"; background: Rectangle{radius:5;color:"#E9E9E9"} }
-                        Button { text: "📂"; onClicked: fileDialog.open() }
-                    }
+                ColumnLayout { Layout.fillWidth: true; spacing: 8
+                    TextField { id: aName; Layout.fillWidth: true; placeholderText: "Name"; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                    TextField { id: aDesc; Layout.fillWidth: true; placeholderText: "Desc"; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                    RowLayout { TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "Ringtone"; background: Rectangle{radius:5;color:"#E9E9E9"} } Button { text: "📂"; onClicked: fileDialog.open() } }
                 }
 
                 TimePicker { id: aTime; theme: popup.theme; isDuration: false; Layout.alignment: Qt.AlignHCenter }
 
-                // DATE PICKER BUTTON
-                RowLayout {
-                    Text { text: "Date:"; color: "white" }
-                    Button {
-                        text: selectedDateString; Layout.fillWidth: true
-                        onClicked: datePopup.open()
-                    }
-                }
+                RowLayout { Text { text: "Date:"; color: "white" } Button { text: selectedDateString; Layout.fillWidth: true; onClicked: datePopup.open() } }
 
                 RowLayout { CheckBox { id: repeatCheck; checked: isRepeat; onCheckedChanged: isRepeat=checked } Text { text: "Repeat"; color: "white"; font.bold: true } }
 
@@ -109,19 +85,14 @@ Popup {
                             id: daysRepeater; model: ["M","T","W","T","F","S","S"]
                             Rectangle {
                                 width: 30; height: 30; radius: 15
-                                color: isDaySelected(index) ? "white" : "transparent"; border.color: "white"
-                                Text { anchors.centerIn: parent; text: modelData; color: isDaySelected(index) ? accentColor : "white"; font.bold: true }
+                                // FIXED: REFERENCE ERROR
+                                color: popup.isDaySelected(index) ? "white" : "transparent"; border.color: "white"
+                                Text { anchors.centerIn: parent; text: modelData; color: popup.isDaySelected(index) ? accentColor : "white"; font.bold: true }
                                 MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
                             }
                         }
                     }
                 }
-
-                // // DATE PICKER BUTTON (New)
-                // RowLayout {
-                //     Text { text: "Date:"; color: "white" }
-                //     Button { text: selectedDateString; Layout.fillWidth: true; onClicked: datePopup.open() }
-                // }
 
                 RowLayout { CheckBox { text: "Delete after ringing?"; contentItem: Text { text: "Delete after ringing?"; color: "white"; leftPadding: 10 } } }
 
@@ -130,32 +101,18 @@ Popup {
                     Layout.alignment: Qt.AlignHCenter; spacing: 40
                     Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✕" } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
                     Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✓"; color: accentColor }
-                        MouseArea {
-                            anchors.fill: parent;
-                            onClicked: {
-                                engine.addAlarm({
-                                    "id": editId, // Pass ID for update
-                                    "name": aName.text, "desc": aDesc.text, "ringtone": selectedRingtone,
-                                    "time": aTime.hours+":"+aTime.minutes,
-                                    "days": isRepeat ? (repeatMode==="daily"?"Daily":JSON.stringify(selectedDays)) : "Once"
-                                });
-                                popup.close();
-                            }
-                        }
+                        MouseArea { anchors.fill: parent; onClicked: {
+                            engine.addAlarm({ "id": editId, "name": aName.text, "desc": aDesc.text, "ringtone": selectedRingtone, "time": aTime.hours+":"+aTime.minutes, "days": isRepeat ? (repeatMode==="daily"?"Daily":JSON.stringify(selectedDays)) : "Once" });
+                            popup.close();
+                        } }
                     }
                 }
                 Item { height: 10 }
-
             }
         }
     }
-
-    // DATE POPUP (Add at bottom)
-    Popup {
-        id: datePopup; width: 300; height: 300; anchors.centerIn: parent; modal: true
+    Popup { id: datePopup; width: 300; height: 300; anchors.centerIn: parent; modal: true
         background: Rectangle { radius: 10; color: accentColor; border.color: "white" }
-        contentItem: DatePicker {
-            onSelectedDateChanged: { selectedDateString = selectedDate.toLocaleDateString(); datePopup.close() }
-        }
+        contentItem: DatePicker { onSelectedDateChanged: { selectedDateString = selectedDate.toLocaleDateString(); datePopup.close() } }
     }
 }

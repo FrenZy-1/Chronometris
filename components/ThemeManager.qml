@@ -26,11 +26,11 @@ QtObject {
     // --- NEW: FONT PRESETS ---
     property string mainFont: "Montserrat"
 
-    property int fontSizeSmall: 10
-    property int fontSizeBody: 14
-    property int fontSizeH3: 18
-    property int fontSizeH2: 24
-    property int fontSizeH1: 32
+    property int fontSizeSmall: 14
+    property int fontSizeBody: 18
+    property int fontSizeH3: 24
+    property int fontSizeH2: 32
+    property int fontSizeH1: 40
 
     property var fontWeightLight: Font.Light
     property var fontWeightNormal: Font.Normal

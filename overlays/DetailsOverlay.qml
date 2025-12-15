@@ -23,17 +23,10 @@ Popup {
 
     // --- OPEN FUNCTION (MATCHING MAIN.QML SIGNAL) ---
     function openWithData(type, name, config, id) {
-        itemType = type;
-        itemName = name;
-        itemConfig = config; // Save config for editing later
-        itemId = id;         // Save ID for editing/deleting
-
-        // Extract description safely
-        if (config && config.desc) itemDesc = config.desc;
-        else itemDesc = "";
-
-        open();
-    }
+            itemType = type; itemName = name; itemConfig = config; itemId = id;
+            itemDesc = (config && config.desc) ? config.desc : ""; // SAFE CHECK
+            open();
+        }
 
     Rectangle {
         anchors.fill: parent; radius: 20; color: accentColor; border.width: 4; border.color: "white"

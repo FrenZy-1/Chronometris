@@ -72,7 +72,7 @@ Flickable {
 
         // --- 3. HEATMAP ---
         ColumnLayout {
-            Layout.fillWidth: true; Layout.margins: 25; spacing: 10
+            Layout.fillWidth: true; Layout.margins: 25; Layout.alignment: Qt.AlignHCenter; spacing: 10
             Text { text: "Weekly Activity"; font.family: "Montserrat"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 12

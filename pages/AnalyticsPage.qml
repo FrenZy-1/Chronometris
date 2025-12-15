@@ -75,17 +75,32 @@ Flickable {
         ColumnLayout {
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; spacing: 10
             Text { text: "Weekly Hours:"; font.bold: true; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+
+            // INCREASED HEIGHT
             Item {
-                Layout.fillWidth: true; Layout.preferredHeight: 160 // Taller
+                Layout.fillWidth: true; Layout.preferredHeight: 220
+
                 RowLayout {
                     anchors.centerIn: parent; spacing: 15
                     Repeater {
                         model: engine.chartData
                         Column { spacing: 5
-                            Item { width: 30; height: 120
-                                Rectangle { width: 8; radius: 2; color: theme.workFill; height: Math.min(modelData.work * 30, parent.height); anchors.bottom: parent.bottom; anchors.left: parent.left }
-                                Rectangle { width: 8; radius: 2; color: theme.shortBreakFill; height: Math.min(modelData.short * 30, parent.height); anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter }
-                                Rectangle { width: 8; radius: 2; color: theme.longBreakFill; height: Math.min(modelData.long * 30, parent.height); anchors.bottom: parent.bottom; anchors.right: parent.right }
+                            Item { width: 40; height: 180 // Taller container
+                                Rectangle {
+                                    width: 12; radius: 2; color: theme.workFill; border.color: theme.workStroke; border.width: 2.5
+                                    height: Math.min(modelData.work * 40, parent.height)
+                                    anchors.bottom: parent.bottom; anchors.left: parent.left
+                                }
+                                Rectangle {
+                                    width: 12; radius: 2; color: theme.shortBreakFill; border.color: theme.shortBreakStroke; border.width: 2.5
+                                    height: Math.min(modelData.short * 40, parent.height)
+                                    anchors.bottom: parent.bottom; anchors.horizontalCenter: parent.horizontalCenter
+                                }
+                                Rectangle {
+                                    width: 12; radius: 2; color: theme.longBreakFill; border.color: theme.longBreakStroke; border.width: 2.5
+                                    height: Math.min(modelData.long * 40, parent.height)
+                                    anchors.bottom: parent.bottom; anchors.right: parent.right
+                                }
                             }
                             Text { text: ["M","T","W","T","F","S","S"][index]; font.pixelSize: 8; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter }
                         }

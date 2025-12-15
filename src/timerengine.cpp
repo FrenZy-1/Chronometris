@@ -7,7 +7,7 @@ TimerEngine::TimerEngine(QObject *parent) : QObject(parent) {
     m_timer = new QTimer(this);
     m_timer->setInterval(1000);
     connect(m_timer, &QTimer::timeout, this, &TimerEngine::processTimer);
-    setupQueue();
+    // REMOVED setupQueue() call here so it starts EMPTY/IDLE
 }
 
 void TimerEngine::setupQueue() {
@@ -18,14 +18,16 @@ void TimerEngine::setupQueue() {
     m_sessionQueue.push_back({"longBreak", 15 * 60});
 }
 
+// --- FIX: DYNAMIC PROPERTIES ---
 QString TimerEngine::currentType() const {
-    if (m_sessionQueue.empty()) return "idle";
+    if (m_sessionQueue.empty()) return "idle"; // Returns idle if empty
     return m_sessionQueue.front().type;
 }
 
-bool TimerEngine::isAlarmSoon() { return true; } // Mock for UI test
-QString TimerEngine::nextAlarmName() { return "Daily Standup"; }
-QString TimerEngine::nextAlarmTime() { return "10:00 AM"; }
+// FIX: Default to FALSE so placeholders don't show
+bool TimerEngine::isAlarmSoon() { return false; }
+QString TimerEngine::nextAlarmName() { return ""; }
+QString TimerEngine::nextAlarmTime() { return ""; }
 
 void TimerEngine::start() {
     if (m_state != "running") {
@@ -123,24 +125,29 @@ void TimerEngine::loadAndStartSession(const QVariantMap& config) {
     int sBreak = durations["break"].toInt();
     int lBreak = durations["long"].toInt();
 
-    // Build Queue based on mode
+    // Build Queue
     if(config["mode"].toString() == "pomodoro") {
         m_sessionQueue.push_back({"work", work});
         m_sessionQueue.push_back({"shortBreak", sBreak});
-        // ... add more steps ...
+        m_sessionQueue.push_back({"work", work});
+        m_sessionQueue.push_back({"shortBreak", sBreak});
+        m_sessionQueue.push_back({"work", work});
+        m_sessionQueue.push_back({"longBreak", lBreak});
     } else {
-        // Custom single run or simple loop
         m_sessionQueue.push_back({"work", work});
     }
 
-    // Set immediate state
     if(!m_sessionQueue.empty()) {
         Session first = m_sessionQueue.front();
         m_remaining = first.duration;
         m_totalDuration = first.duration;
         m_progress = 0.0;
-        start(); // Auto-start
+        // Auto-start
+        if(m_state != "running") start();
     }
+
+    emit typeChanged();
+    emit timeChanged(); // Refresh UI
 }
 
 void TimerEngine::deleteTimer(int id) {
