@@ -15,7 +15,6 @@ Popup {
     property var theme
     property color accentColor
 
-    // ... (Properties EditID, etc remain same) ...
     property int editId: -1
     property bool isEditMode: false
     property bool isRepeat: false
@@ -55,19 +54,35 @@ Popup {
         Flickable {
             anchors.fill: parent; anchors.margins: 20; contentHeight: contentCol.height; clip: true
             ColumnLayout {
-                id: contentCol; width: parent.width; spacing: 12
+                id: contentCol; width: parent.width; spacing: 15
+
                 Text {
                     Layout.alignment: Qt.AlignHCenter; text: isEditMode?"EDIT ALARM":"ADD ALARM";
                     font.family: theme.mainFont; font.weight: theme.fontWeightExtraBold; font.pixelSize: theme.fontSizeH2; color: "white"
                 }
                 Rectangle { Layout.fillWidth: true; height: 2; color: "white" }
 
-                ColumnLayout { Layout.fillWidth: true; spacing: 8
-                    TextField { id: aName; Layout.fillWidth: true; placeholderText: "Name"; font.pixelSize: theme.fontSizeBody; background: Rectangle{radius:5;color:"#E9E9E9"} }
-                    TextField { id: aDesc; Layout.fillWidth: true; placeholderText: "Desc"; font.pixelSize: theme.fontSizeBody; background: Rectangle{radius:5;color:"#E9E9E9"} }
-                    RowLayout {
-                        TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "Ringtone"; font.pixelSize: theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} }
-                        Button { text: "📂"; onClicked: fileDialog.open() }
+                // Inputs
+                ColumnLayout { Layout.fillWidth: true; spacing: 10
+                    ColumnLayout {
+                        spacing: 2; Layout.fillWidth: true
+                        Text { text: "Alarm Name"; color: "white"; font.pixelSize: 12; font.bold: true }
+                        TextField { id: aName; Layout.fillWidth: true; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                    }
+
+                    ColumnLayout {
+                        spacing: 2; Layout.fillWidth: true
+                        Text { text: "Description"; color: "white"; font.pixelSize: 12; font.bold: true }
+                        TextField { id: aDesc; Layout.fillWidth: true; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                    }
+
+                    ColumnLayout {
+                        spacing: 2; Layout.fillWidth: true
+                        Text { text: "Ringtone"; color: "white"; font.pixelSize: 12; font.bold: true }
+                        RowLayout {
+                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "None selected"; font.pixelSize: theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                            Button { text: "📂"; onClicked: fileDialog.open() }
+                        }
                     }
                 }
 
@@ -81,8 +96,18 @@ Popup {
                     visible: isRepeat
                     RowLayout {
                         Layout.alignment: Qt.AlignHCenter
-                        Rectangle { width: 60; height: 25; color: repeatMode==="daily"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Daily";font.pixelSize:theme.fontSizeSmall; color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="daily"} }
-                        Rectangle { width: 60; height: 25; color: repeatMode==="custom"?"white":"transparent"; radius: 4; border.color:"white"; Text{anchors.centerIn:parent;text:"Custom";font.pixelSize:theme.fontSizeSmall; color:parent.color=="white"?accentColor:"white"} MouseArea{anchors.fill:parent;onClicked:repeatMode="custom"} }
+                        Rectangle {
+                            width: 60; height: 25; radius: 4; border.color: "white"
+                            color: repeatMode==="daily" ? "white" : "transparent"
+                            Text { anchors.centerIn: parent; text: "Daily"; font.pixelSize: 12; color: repeatMode==="daily"?"#333333":"white" }
+                            MouseArea { anchors.fill: parent; onClicked: repeatMode="daily" }
+                        }
+                        Rectangle {
+                            width: 60; height: 25; radius: 4; border.color: "white"
+                            color: repeatMode==="custom" ? "white" : "transparent"
+                            Text { anchors.centerIn: parent; text: "Custom"; font.pixelSize: 12; color: repeatMode==="custom"?"#333333":"white" }
+                            MouseArea { anchors.fill: parent; onClicked: repeatMode="custom" }
+                        }
                     }
                     RowLayout {
                         visible: repeatMode === "custom"
@@ -90,9 +115,12 @@ Popup {
                         Repeater {
                             id: daysRepeater; model: ["M","T","W","T","F","S","S"]
                             Rectangle {
-                                width: 30; height: 30; radius: 15
-                                color: popup.isDaySelected(index) ? "white" : "transparent"; border.color: "white"
-                                Text { anchors.centerIn: parent; text: modelData; font.pixelSize: theme.fontSizeSmall; color: popup.isDaySelected(index) ? accentColor : "white"; font.bold: true }
+                                width: 30; height: 30; radius: 15; border.color: "white"
+                                color: popup.isDaySelected(index) ? "white" : "transparent"
+                                Text {
+                                    anchors.centerIn: parent; text: modelData; font.bold: true; font.pixelSize: theme.fontSizeSmall
+                                    color: popup.isDaySelected(index) ? "#333333" : "white"
+                                }
                                 MouseArea { anchors.fill: parent; onClicked: toggleDay(index) }
                             }
                         }
