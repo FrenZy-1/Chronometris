@@ -133,7 +133,7 @@ Popup {
                         Layout.fillWidth: true; spacing: 2
                         Text { text: "Timer Ringtone"; color: "white"; font.pixelSize: 12; font.bold: true }
                         RowLayout {
-                            TextField { Layout.fillWidth: true; readOnly: true; text: mainRingtone; placeholderText: "None selected"; font.pixelSize: theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                            TextField { Layout.fillWidth: true; readOnly: true; text: mainRingtone; background: Rectangle{radius:5;color:"#E9E9E9"} }
                             Button { text: "📂"; onClicked:{fileDialog.target=0;fileDialog.open()} }
                         }
                     }

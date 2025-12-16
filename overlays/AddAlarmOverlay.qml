@@ -80,7 +80,7 @@ Popup {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Ringtone"; color: "white"; font.pixelSize: 12; font.bold: true }
                         RowLayout {
-                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "None selected"; font.pixelSize: theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; background: Rectangle{radius:5;color:"#E9E9E9"} }
                             Button { text: "📂"; onClicked: fileDialog.open() }
                         }
                     }
