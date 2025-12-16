@@ -5,7 +5,9 @@
 #include <QTimer>
 #include <deque>
 #include <QVariantMap>
-#include <QTime> // Needed for time checks
+#include <QTime>
+#include <QMediaPlayer>
+#include <QAudioOutput>
 
 struct Session {
     QString type;
@@ -15,13 +17,15 @@ struct Session {
 class TimerEngine : public QObject {
     Q_OBJECT
 
-    // ... (Keep all existing properties) ...
+    // ... (Keep existing properties) ...
     Q_PROPERTY(double progress READ progress NOTIFY timeChanged)
     Q_PROPERTY(int timeRemaining READ timeRemaining NOTIFY timeChanged)
     Q_PROPERTY(QString timeRemainingString READ timeRemainingString NOTIFY timeChanged)
     Q_PROPERTY(QString currentType READ currentType NOTIFY typeChanged)
     Q_PROPERTY(QString currentState READ currentState NOTIFY currentStateChanged)
+
     Q_PROPERTY(bool isAlarmSoon READ isAlarmSoon NOTIFY timeChanged)
+    Q_PROPERTY(bool isRinging READ isRinging NOTIFY currentStateChanged)
     Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
     Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
 
@@ -29,7 +33,6 @@ class TimerEngine : public QObject {
     Q_PROPERTY(QVariantList activeAlarmsList READ activeAlarmsList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList inactiveAlarmsList READ inactiveAlarmsList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList historyList READ historyList NOTIFY analyticsChanged)
-
     Q_PROPERTY(QString todayFocusString READ todayFocusString NOTIFY analyticsChanged)
     Q_PROPERTY(int todaySessionCount READ todaySessionCount NOTIFY analyticsChanged)
     Q_PROPERTY(int currentStreak READ currentStreak NOTIFY analyticsChanged)
@@ -38,15 +41,14 @@ class TimerEngine : public QObject {
 public:
     explicit TimerEngine(QObject *parent = nullptr);
 
-    // Getters
     double progress() const { return m_progress; }
     int timeRemaining() const { return m_remaining; }
     QString timeRemainingString() const;
     QString currentState() const { return m_state; }
     QString currentType() const;
 
-    // Updated Getters
     bool isAlarmSoon() const { return m_isAlarmSoon; }
+    bool isRinging() const { return m_isRinging; }
     QString nextAlarmName() const { return m_nextAlarmName; }
     QString nextAlarmTime() const { return m_nextAlarmTime; }
 
@@ -60,7 +62,6 @@ public:
     QVariantList historyList();
     QVariantList chartData();
 
-    // Invokables
     Q_INVOKABLE void start();
     Q_INVOKABLE void pause();
     Q_INVOKABLE void stop();
@@ -72,6 +73,8 @@ public:
     Q_INVOKABLE void deleteAlarm(int id);
     Q_INVOKABLE void generateDummyData();
     Q_INVOKABLE void toggleAlarm(int id);
+    Q_INVOKABLE void stopRinging();
+    Q_INVOKABLE void snoozeAlarm();
 
 signals:
     void timeChanged();
@@ -84,11 +87,15 @@ private:
     void processTimer();
     void completeSession();
     void refillQueue();
-    void checkAlarms(); // <--- NEW CHECK FUNCTION
+    void checkAlarms();
+    void playSound(const QString& path, bool loop);
 
     QTimer *m_timer;
     std::deque<Session> m_sessionQueue;
     QVariantMap m_activeConfig;
+
+    QMediaPlayer *m_player;
+    QAudioOutput *m_audioOutput;
 
     QString m_state = "stopped";
     int m_remaining = 1500;
@@ -99,10 +106,11 @@ private:
     int m_todaySessions = 0;
     int m_streak = 3;
 
-    // ALARM STATE
     bool m_isAlarmSoon = false;
+    bool m_isRinging = false;
     QString m_nextAlarmName = "";
     QString m_nextAlarmTime = "";
+    QString m_dismissedAlarmTime = ""; // <--- NEW: Tracks suppressed alarm
 };
 
 #endif // TIMERENGINE_H
