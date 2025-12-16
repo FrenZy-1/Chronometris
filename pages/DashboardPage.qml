@@ -25,8 +25,7 @@ Flickable {
             visible: engine.currentState !== "stopped"
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter
             Text { text: "Running Timer:"; font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
-            Text { text: engine.currentType === "work" ? "WORK SESSION" :
-                                                         (engine.currentType === "longBreak" ? "LONG BREAK" : "SHORT BREAK"); font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: engine.currentType === "work" ? "WORK SESSION" : (engine.currentType === "longBreak" ? "LONG BREAK" : "SHORT BREAK"); font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             Item { width: 260; height: 260; Layout.alignment: Qt.AlignHCenter
                 TimerProgressCircle { anchors.centerIn: parent; circleSize: 240; progress: engine.progress; progressColor: accentColor }
                 Column { anchors.centerIn: parent
@@ -34,12 +33,18 @@ Flickable {
                     Text { text: engine.currentState; font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody; color: theme.textSecondary; anchors.horizontalCenter: parent.horizontalCenter; font.capitalization: Font.Capitalize }
                 }
             }
+
+            // --- FIXED BUTTONS ---
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 20
+                // 1. Pause/Play
                 RoundButton { icon: engine.currentState==="running"?"pause":"play_arrow"; color: accentColor; onClicked: engine.currentState==="running"?engine.pause():engine.start() }
+                // 2. Stop (Hard Stop)
                 RoundButton { icon: "stop"; color: accentColor; onClicked: engine.stop() }
-                RoundButton { icon: "skip_next"; color: accentColor; onClicked: engine.skip() }
+                // 3. Skip Cycle (Next Session)
                 RoundButton { icon: "fast_forward"; color: accentColor; onClicked: engine.skip() }
+                // 4. Skip Timer (End Entirely)
+                RoundButton { icon: "skip_next"; color: accentColor; onClicked: engine.stop() }
             }
         }
 

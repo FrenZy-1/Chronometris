@@ -189,7 +189,7 @@ Popup {
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Alarm Ringtone"; color: "white"; font.pixelSize: 12; font.bold: true }
-                        RowLayout { TextField { Layout.fillWidth: true; readOnly: true; text: schedRingtone; placeholderText: "None selected"; font.pixelSize:theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} } Button { text: "📂"; onClicked: {fileDialog.target=1;fileDialog.open()} } }
+                        RowLayout { TextField { Layout.fillWidth: true; readOnly: true; text: schedRingtone; background: Rectangle{radius:5;color:"#E9E9E9"} } Button { text: "📂"; onClicked: {fileDialog.target=1;fileDialog.open()} } }
                     }
 
                     RowLayout { Text { text: "Date:"; color: "white"; font.pixelSize:theme.fontSizeBody } Button { text: selectedDateString; Layout.fillWidth: true; onClicked: datePopup.open() } }

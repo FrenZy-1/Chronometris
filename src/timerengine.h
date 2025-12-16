@@ -14,7 +14,7 @@ struct Session {
 class TimerEngine : public QObject {
     Q_OBJECT
 
-    // Properties
+    // ... (Keep existing Time/Progress properties) ...
     Q_PROPERTY(double progress READ progress NOTIFY timeChanged)
     Q_PROPERTY(int timeRemaining READ timeRemaining NOTIFY timeChanged)
     Q_PROPERTY(QString timeRemainingString READ timeRemainingString NOTIFY timeChanged)
@@ -24,12 +24,13 @@ class TimerEngine : public QObject {
     Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
     Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
 
-    // Lists
+    // --- UPDATED LISTS ---
     Q_PROPERTY(QVariantList timersList READ timersList NOTIFY dataChanged)
-    Q_PROPERTY(QVariantList alarmsList READ alarmsList NOTIFY dataChanged)
+    // We split alarms into two lists for the UI
+    Q_PROPERTY(QVariantList activeAlarmsList READ activeAlarmsList NOTIFY dataChanged)
+    Q_PROPERTY(QVariantList inactiveAlarmsList READ inactiveAlarmsList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList historyList READ historyList NOTIFY analyticsChanged)
 
-    // Stats
     Q_PROPERTY(QString todayFocusString READ todayFocusString NOTIFY analyticsChanged)
     Q_PROPERTY(int todaySessionCount READ todaySessionCount NOTIFY analyticsChanged)
     Q_PROPERTY(int currentStreak READ currentStreak NOTIFY analyticsChanged)
@@ -53,7 +54,10 @@ public:
     int currentStreak();
 
     QVariantList timersList();
-    QVariantList alarmsList();
+    // New List Getters
+    QVariantList activeAlarmsList();
+    QVariantList inactiveAlarmsList();
+
     QVariantList historyList();
     QVariantList chartData();
 
@@ -68,6 +72,7 @@ public:
     Q_INVOKABLE void deleteTimer(int id);
     Q_INVOKABLE void deleteAlarm(int id);
     Q_INVOKABLE void generateDummyData();
+    Q_INVOKABLE void toggleAlarm(int id); // <--- NEW TOGGLE FUNCTION
 
 signals:
     void timeChanged();
@@ -79,11 +84,11 @@ signals:
 private:
     void processTimer();
     void completeSession();
-    void refillQueue(); // <--- ADDED THIS
+    void refillQueue();
 
     QTimer *m_timer;
     std::deque<Session> m_sessionQueue;
-    QVariantMap m_activeConfig; // <--- ADDED THIS
+    QVariantMap m_activeConfig;
 
     QString m_state = "stopped";
     int m_remaining = 1500;

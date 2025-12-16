@@ -13,7 +13,7 @@ Flickable {
     ColumnLayout {
         id: content; width: parent.width; spacing: 15; Layout.topMargin: 20
 
-        // 1. UPCOMING
+        // --- 1. UPCOMING ALARM ---
         ColumnLayout {
             visible: engine.isAlarmSoon
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 30; spacing: 5
@@ -29,38 +29,77 @@ Flickable {
             Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20; Layout.topMargin: 15 }
         }
 
-        // 2. ACTIVE
+        // --- 2. ACTIVE ALARMS ---
         ColumnLayout {
             Layout.fillWidth: true; Layout.margins: 20; spacing: 10
             Layout.topMargin: !engine.isAlarmSoon ? 40 : 0
+
             Rectangle { Layout.fillWidth: true; height: 35; color: accentColor; radius: 5
-                RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Active Alarms";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} Text{text:engine.alarmsList.length;font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody;color:"white"} }
+                RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Active Alarms";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} Text{text:engine.activeAlarmsList.length;font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody;color:"white"} }
             }
+
             Repeater {
-                model: engine.alarmsList
+                model: engine.activeAlarmsList
                 Rectangle {
                     Layout.fillWidth: true; height: 50; color: theme.isDarkMode?"#2A2A2A":"white"; radius: 5; border.color: theme.borderColor; border.width: 1
-                    RowLayout { anchors.fill: parent; anchors.margins: 10
-                        Column { Layout.fillWidth: true; Text{text:modelData.name;font.family: theme.mainFont; font.weight: theme.fontWeightBold; color:theme.textPrimary; font.pixelSize: theme.fontSizeBody} Text{text:modelData.config.time||"00:00";font.family: theme.mainFont; color:theme.textSecondary;font.pixelSize:theme.fontSizeSmall} }
-                        Rectangle { width: 36; height: 20; radius: 10; color: accentColor; Rectangle{x:18;width:16;height:16;radius:8;color:"white";anchors.verticalCenter:parent.verticalCenter} }
+
+                    RowLayout {
+                        anchors.fill: parent; anchors.margins: 10
+
+                        // Text Info (FIXED LAYOUT)
+                        Column {
+                            Layout.fillWidth: true // Pushes switch to the right
+                            Layout.alignment: Qt.AlignVCenter
+                            Text { text: modelData.name; font.family: theme.mainFont; font.weight: theme.fontWeightBold; color: theme.textPrimary; font.pixelSize: theme.fontSizeBody }
+                            Text { text: modelData.config.time||"00:00"; font.family: theme.mainFont; color: theme.textSecondary; font.pixelSize: theme.fontSizeSmall }
+                        }
+
+                        // ACTIVE SWITCH (Green)
+                        Rectangle {
+                            width: 36; height: 20; radius: 10; color: accentColor
+                            Layout.alignment: Qt.AlignVCenter // Vertical Center
+                            Rectangle { x: 18; width: 16; height: 16; radius: 8; color: "white"; anchors.verticalCenter: parent.verticalCenter }
+                            MouseArea { anchors.fill: parent; onClicked: engine.toggleAlarm(modelData.id) }
+                        }
                     }
-                    MouseArea { anchors.fill: parent; onDoubleClicked: alarmPage.editRequested("alarm", modelData.name, modelData.config, modelData.id) }
+                    MouseArea { anchors.fill: parent; z: -1; onDoubleClicked: alarmPage.editRequested("alarm", modelData.name, modelData.config, modelData.id) }
                 }
             }
         }
 
-        // 3. TURNED OFF (Dummy)
+        // --- 3. TURNED OFF ALARMS ---
         ColumnLayout {
             Layout.fillWidth: true; Layout.margins: 20; spacing: 10
+
             Rectangle { Layout.fillWidth: true; height: 35; color: "#797979"; radius: 5
-                RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Turned Off";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} }
+                RowLayout { anchors.fill: parent; anchors.margins: 10; Text{text:"Turned Off";font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color:"white";Layout.fillWidth:true} Text{text:engine.inactiveAlarmsList.length;font.family: theme.mainFont; font.pixelSize: theme.fontSizeBody;color:"white"} }
             }
-            // Inactive Item
-            Rectangle {
-                Layout.fillWidth: true; height: 50; color: theme.isDarkMode?"#2A2A2A":"white"; radius: 5; border.color: theme.borderColor; opacity: 0.6
-                RowLayout { anchors.fill: parent; anchors.margins: 10
-                    Column { Layout.fillWidth: true; Text{text:"Weekend Hike";font.family: theme.mainFont; font.weight: theme.fontWeightBold; color:theme.textPrimary; font.pixelSize: theme.fontSizeBody} Text{text:"6:00 AM";font.family: theme.mainFont; color:theme.textSecondary;font.pixelSize:theme.fontSizeSmall} }
-                    Rectangle { width: 36; height: 20; radius: 10; color: "#CCC"; Rectangle{x:2;width:16;height:16;radius:8;color:"white";anchors.verticalCenter:parent.verticalCenter} }
+
+            Repeater {
+                model: engine.inactiveAlarmsList
+                Rectangle {
+                    Layout.fillWidth: true; height: 50; color: theme.isDarkMode?"#2A2A2A":"white"; radius: 5; border.color: theme.borderColor; opacity: 0.7
+
+                    RowLayout {
+                        anchors.fill: parent; anchors.margins: 10
+
+                        // Text Info (FIXED LAYOUT)
+                        Column {
+                            Layout.fillWidth: true
+                            Layout.alignment: Qt.AlignVCenter
+                            Text { text: modelData.name; font.family: theme.mainFont; font.weight: theme.fontWeightBold; color: theme.textPrimary; font.pixelSize: theme.fontSizeBody }
+                            Text { text: modelData.config.time||"00:00"; font.family: theme.mainFont; color: theme.textSecondary; font.pixelSize: theme.fontSizeSmall }
+                        }
+
+                        // INACTIVE SWITCH (Grey)
+                        Rectangle {
+                            width: 36; height: 20; radius: 10; color: "#CCCCCC"
+                            Layout.alignment: Qt.AlignVCenter // Vertical Center
+                            Rectangle { x: 2; width: 16; height: 16; radius: 8; color: "white"; anchors.verticalCenter: parent.verticalCenter }
+                            MouseArea { anchors.fill: parent; onClicked: engine.toggleAlarm(modelData.id) }
+                        }
+                    }
+                    MouseArea { anchors.fill: parent; z: -1; onDoubleClicked: alarmPage.editRequested("alarm", modelData.name, modelData.config, modelData.id) }
                 }
             }
         }

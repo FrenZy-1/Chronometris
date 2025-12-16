@@ -67,20 +67,20 @@ Popup {
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Alarm Name"; color: "white"; font.pixelSize: 12; font.bold: true }
-                        TextField { id: aName; Layout.fillWidth: true; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                        TextField { id: aName; Layout.fillWidth: true; placeholderText: "Enter name..."; font.pixelSize: theme.fontSizeBody; background: Rectangle{radius:5;color:"#E9E9E9"} }
                     }
 
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Description"; color: "white"; font.pixelSize: 12; font.bold: true }
-                        TextField { id: aDesc; Layout.fillWidth: true; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                        TextField { id: aDesc; Layout.fillWidth: true; placeholderText: "Enter description..."; font.pixelSize: theme.fontSizeBody; background: Rectangle{radius:5;color:"#E9E9E9"} }
                     }
 
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Ringtone"; color: "white"; font.pixelSize: 12; font.bold: true }
                         RowLayout {
-                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "None selected"; font.pixelSize: theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} }
                             Button { text: "📂"; onClicked: fileDialog.open() }
                         }
                     }
@@ -132,10 +132,18 @@ Popup {
                 Item { Layout.fillHeight: true }
                 RowLayout {
                     Layout.alignment: Qt.AlignHCenter; spacing: 40
-                    Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✘"; font.pixelSize: theme.fontSizeH3 } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
+                    Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✕"; font.pixelSize: theme.fontSizeH3 } MouseArea { anchors.fill: parent; onClicked: popup.close() } }
                     Rectangle { width: 50; height: 50; radius: 25; color: "#E9E9E9"; Text { anchors.centerIn: parent; text: "✓"; font.pixelSize: theme.fontSizeH3; color: accentColor }
                         MouseArea { anchors.fill: parent; onClicked: {
-                            engine.addAlarm({ "id": editId, "name": aName.text.trim()===""?"Alarm":aName.text, "desc": aDesc.text, "ringtone": selectedRingtone, "time": aTime.hours+":"+aTime.minutes, "days": isRepeat ? (repeatMode==="daily"?"Daily":JSON.stringify(selectedDays)) : "Once" });
+                            engine.addAlarm({
+                                "id": editId,
+                                "name": aName.text.trim()===""?"Alarm":aName.text,
+                                "desc": aDesc.text,
+                                "ringtone": selectedRingtone,
+                                "time": aTime.hours+":"+aTime.minutes,
+                                "days": isRepeat ? (repeatMode==="daily"?"Daily":JSON.stringify(selectedDays)) : "Once",
+                                "active": true // <--- FIX: FORCE ACTIVE ON CREATION
+                            });
                             popup.close();
                         } }
                     }

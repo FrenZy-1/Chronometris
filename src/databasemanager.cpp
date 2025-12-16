@@ -1,94 +1,97 @@
 #include "DatabaseManager.h"
-#include <QSqlQuery>
-#include <QSqlError>
-#include <QStandardPaths>
-#include <QDir>
 #include <QDebug>
-#include <QDateTime>
-#include <QRandomGenerator>
+#include <QSqlError>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJsonArray>
+#include <QStandardPaths>
+#include <QDir>
 
 DatabaseManager& DatabaseManager::instance() {
-    static DatabaseManager _instance;
-    return _instance;
+    static DatabaseManager instance;
+    return instance;
 }
 
-DatabaseManager::DatabaseManager(QObject *parent) : QObject(parent) {}
-DatabaseManager::~DatabaseManager() { if (m_db.isOpen()) m_db.close(); }
-
-void DatabaseManager::init() {
-    m_db = QSqlDatabase::addDatabase("QSQLITE");
-    QString dataLocation = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
-    QDir dir(dataLocation);
+DatabaseManager::DatabaseManager() {
+    QString dataPath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QDir dir(dataPath);
     if (!dir.exists()) dir.mkpath(".");
-    m_db.setDatabaseName(dataLocation + "/chronometris.db");
 
-    if (!m_db.open()) { qCritical() << "DB Error:" << m_db.lastError().text(); return; }
-    createTables();
+    m_db = QSqlDatabase::addDatabase("QSQLITE");
+    m_db.setDatabaseName(dataPath + "/chronometris.db");
+
+    if (!m_db.open()) {
+        qDebug() << "Error: connection with database failed";
+    } else {
+        createTables();
+    }
 }
 
 void DatabaseManager::createTables() {
     QSqlQuery query;
-    query.exec("CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY, type TEXT, duration INTEGER, date DATETIME DEFAULT CURRENT_TIMESTAMP)");
-    // Both tables now use 'config' TEXT to store complex JSON data
-    query.exec("CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY, name TEXT, config TEXT)");
-    query.exec("CREATE TABLE IF NOT EXISTS alarms (id INTEGER PRIMARY KEY, name TEXT, config TEXT)");
+    query.exec("CREATE TABLE IF NOT EXISTS timers (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, config TEXT)");
+    query.exec("CREATE TABLE IF NOT EXISTS alarms (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, config TEXT)");
 }
 
 void DatabaseManager::addTimer(const QVariantMap& data) {
     QSqlQuery query;
-    bool isUpdate = data.contains("id") && data["id"].toInt() > 0;
+    QVariantMap config;
 
-    if (isUpdate) {
+    // PACK EVERYTHING NOT ID/NAME INTO CONFIG
+    for(auto key : data.keys()) {
+        if(key != "id" && key != "name") {
+            config[key] = data[key];
+        }
+    }
+
+    QString configJson = QJsonDocument::fromVariant(config).toJson(QJsonDocument::Compact);
+
+    if (data["id"].toInt() != -1) {
         query.prepare("UPDATE timers SET name = :name, config = :config WHERE id = :id");
-        query.bindValue(":id", data["id"].toInt());
+        query.bindValue(":id", data["id"]);
     } else {
         query.prepare("INSERT INTO timers (name, config) VALUES (:name, :config)");
     }
 
-    QString name = data["name"].toString();
-    QJsonObject json = QJsonObject::fromVariantMap(data);
-    QJsonDocument doc(json);
-    query.bindValue(":name", name);
-    query.bindValue(":config", QString(doc.toJson(QJsonDocument::Compact)));
+    query.bindValue(":name", data["name"]);
+    query.bindValue(":config", configJson);
 
-    if(!query.exec()) qCritical() << "Timer Save Error:" << query.lastError().text();
-    else qDebug() << (isUpdate ? "Timer Updated" : "Timer Added");
+    if(!query.exec()) qDebug() << "AddTimer Error:" << query.lastError();
 }
 
 void DatabaseManager::addAlarm(const QVariantMap& data) {
     QSqlQuery query;
-    bool isUpdate = data.contains("id") && data["id"].toInt() > 0;
+    QVariantMap config;
 
-    if (isUpdate) {
+    // PACK EVERYTHING NOT ID/NAME INTO CONFIG
+    for(auto key : data.keys()) {
+        if(key != "id" && key != "name") {
+            config[key] = data[key];
+        }
+    }
+
+    QString configJson = QJsonDocument::fromVariant(config).toJson(QJsonDocument::Compact);
+
+    if (data["id"].toInt() != -1) {
         query.prepare("UPDATE alarms SET name = :name, config = :config WHERE id = :id");
-        query.bindValue(":id", data["id"].toInt());
+        query.bindValue(":id", data["id"]);
     } else {
         query.prepare("INSERT INTO alarms (name, config) VALUES (:name, :config)");
     }
 
-    QString name = data["name"].toString();
-    QJsonObject json = QJsonObject::fromVariantMap(data);
-    QJsonDocument doc(json);
-    query.bindValue(":name", name);
-    query.bindValue(":config", QString(doc.toJson(QJsonDocument::Compact)));
+    query.bindValue(":name", data["name"]);
+    query.bindValue(":config", configJson);
 
-    if(!query.exec()) qCritical() << "Alarm Save Error:" << query.lastError().text();
-    else qDebug() << (isUpdate ? "Alarm Updated" : "Alarm Added");
+    if(!query.exec()) qDebug() << "AddAlarm Error:" << query.lastError();
 }
 
-// --- FETCH LISTS ---
 QVariantList DatabaseManager::getTimers() {
     QVariantList list;
-    QSqlQuery query("SELECT id, name, config FROM timers ORDER BY id DESC");
-    while(query.next()) {
+    QSqlQuery query("SELECT * FROM timers");
+    while (query.next()) {
         QVariantMap map;
-        map["id"] = query.value(0).toInt();
-        map["name"] = query.value(1).toString();
-        // Parse JSON back to QVariantMap
-        QJsonDocument doc = QJsonDocument::fromJson(query.value(2).toByteArray());
+        map["id"] = query.value("id");
+        map["name"] = query.value("name");
+        QJsonDocument doc = QJsonDocument::fromJson(query.value("config").toByteArray());
         map["config"] = doc.toVariant().toMap();
         list.append(map);
     }
@@ -97,41 +100,28 @@ QVariantList DatabaseManager::getTimers() {
 
 QVariantList DatabaseManager::getAlarms() {
     QVariantList list;
-    QSqlQuery query("SELECT id, name, config FROM alarms ORDER BY id DESC");
-    while(query.next()) {
+    QSqlQuery query("SELECT * FROM alarms");
+    while (query.next()) {
         QVariantMap map;
-        map["id"] = query.value(0).toInt();
-        map["name"] = query.value(1).toString();
-        // Parse JSON back to QVariantMap
-        QJsonDocument doc = QJsonDocument::fromJson(query.value(2).toByteArray());
+        map["id"] = query.value("id");
+        map["name"] = query.value("name");
+        QJsonDocument doc = QJsonDocument::fromJson(query.value("config").toByteArray());
         map["config"] = doc.toVariant().toMap();
         list.append(map);
     }
     return list;
 }
 
-// Implement Delete
 void DatabaseManager::deleteTimer(int id) {
-    QSqlQuery query; query.prepare("DELETE FROM timers WHERE id = :id");
-    query.bindValue(":id", id); query.exec();
+    QSqlQuery query;
+    query.prepare("DELETE FROM timers WHERE id = :id");
+    query.bindValue(":id", id);
+    query.exec();
 }
+
 void DatabaseManager::deleteAlarm(int id) {
-    QSqlQuery query; query.prepare("DELETE FROM alarms WHERE id = :id");
-    query.bindValue(":id", id); query.exec();
+    QSqlQuery query;
+    query.prepare("DELETE FROM alarms WHERE id = :id");
+    query.bindValue(":id", id);
+    query.exec();
 }
-
-// --- ANALYTICS ---
-void DatabaseManager::addSession(const QString& type, int duration) {
-    QSqlQuery query; query.prepare("INSERT INTO sessions (type, duration) VALUES (:t, :d)");
-    query.bindValue(":t", type); query.bindValue(":d", duration); query.exec();
-}
-
-QList<int> DatabaseManager::getWeeklyStats() {
-    // Return mock [2,5,3...] if empty, or implement SQL logic
-    return {2, 4, 3, 5, 2, 1, 0};
-}
-QList<int> DatabaseManager::getSessionDistribution() { return {10, 5, 2}; }
-QVariantList DatabaseManager::getHeatmapData() {
-    QVariantList l; for(int i=0;i<70;i++) l.append(QRandomGenerator::global()->bounded(4)); return l;
-}
-void DatabaseManager::generateDummyData() {}

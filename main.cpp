@@ -16,9 +16,6 @@ int main(int argc, char *argv[])
     // FORCE MATERIAL STYLE (Cleanest look for this app)
     QQuickStyle::setStyle("Material");
 
-    // Initialize Database
-    DatabaseManager::instance().init();
-
     // Create the Timer Engine
     TimerEngine timerEngine;
 
