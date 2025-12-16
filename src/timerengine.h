@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <deque>
 #include <QVariantMap>
+#include <QTime> // Needed for time checks
 
 struct Session {
     QString type;
@@ -14,7 +15,7 @@ struct Session {
 class TimerEngine : public QObject {
     Q_OBJECT
 
-    // ... (Keep existing Time/Progress properties) ...
+    // ... (Keep all existing properties) ...
     Q_PROPERTY(double progress READ progress NOTIFY timeChanged)
     Q_PROPERTY(int timeRemaining READ timeRemaining NOTIFY timeChanged)
     Q_PROPERTY(QString timeRemainingString READ timeRemainingString NOTIFY timeChanged)
@@ -24,9 +25,7 @@ class TimerEngine : public QObject {
     Q_PROPERTY(QString nextAlarmName READ nextAlarmName NOTIFY timeChanged)
     Q_PROPERTY(QString nextAlarmTime READ nextAlarmTime NOTIFY timeChanged)
 
-    // --- UPDATED LISTS ---
     Q_PROPERTY(QVariantList timersList READ timersList NOTIFY dataChanged)
-    // We split alarms into two lists for the UI
     Q_PROPERTY(QVariantList activeAlarmsList READ activeAlarmsList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList inactiveAlarmsList READ inactiveAlarmsList NOTIFY dataChanged)
     Q_PROPERTY(QVariantList historyList READ historyList NOTIFY analyticsChanged)
@@ -45,19 +44,19 @@ public:
     QString timeRemainingString() const;
     QString currentState() const { return m_state; }
     QString currentType() const;
-    bool isAlarmSoon();
-    QString nextAlarmName();
-    QString nextAlarmTime();
+
+    // Updated Getters
+    bool isAlarmSoon() const { return m_isAlarmSoon; }
+    QString nextAlarmName() const { return m_nextAlarmName; }
+    QString nextAlarmTime() const { return m_nextAlarmTime; }
 
     QString todayFocusString();
     int todaySessionCount();
     int currentStreak();
 
     QVariantList timersList();
-    // New List Getters
     QVariantList activeAlarmsList();
     QVariantList inactiveAlarmsList();
-
     QVariantList historyList();
     QVariantList chartData();
 
@@ -72,7 +71,7 @@ public:
     Q_INVOKABLE void deleteTimer(int id);
     Q_INVOKABLE void deleteAlarm(int id);
     Q_INVOKABLE void generateDummyData();
-    Q_INVOKABLE void toggleAlarm(int id); // <--- NEW TOGGLE FUNCTION
+    Q_INVOKABLE void toggleAlarm(int id);
 
 signals:
     void timeChanged();
@@ -85,6 +84,7 @@ private:
     void processTimer();
     void completeSession();
     void refillQueue();
+    void checkAlarms(); // <--- NEW CHECK FUNCTION
 
     QTimer *m_timer;
     std::deque<Session> m_sessionQueue;
@@ -98,6 +98,11 @@ private:
     int m_todayFocusSeconds = 0;
     int m_todaySessions = 0;
     int m_streak = 3;
+
+    // ALARM STATE
+    bool m_isAlarmSoon = false;
+    QString m_nextAlarmName = "";
+    QString m_nextAlarmTime = "";
 };
 
 #endif // TIMERENGINE_H

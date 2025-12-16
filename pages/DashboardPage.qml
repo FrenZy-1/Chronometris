@@ -34,17 +34,41 @@ Flickable {
                 }
             }
 
-            // --- FIXED BUTTONS ---
+            // --- FIXED BUTTON LABELS ---
             RowLayout {
-                Layout.alignment: Qt.AlignHCenter; spacing: 20
-                // 1. Pause/Play
-                RoundButton { icon: engine.currentState==="running"?"pause":"play_arrow"; color: accentColor; onClicked: engine.currentState==="running"?engine.pause():engine.start() }
-                // 2. Stop (Hard Stop)
-                RoundButton { icon: "stop"; color: accentColor; onClicked: engine.stop() }
-                // 3. Skip Cycle (Next Session)
-                RoundButton { icon: "fast_forward"; color: accentColor; onClicked: engine.skip() }
-                // 4. Skip Timer (End Entirely)
-                RoundButton { icon: "skip_next"; color: accentColor; onClicked: engine.stop() }
+                Layout.alignment: Qt.AlignHCenter; spacing: 15
+
+                // Play / Pause
+                RoundButton {
+                    text: engine.currentState==="running" ? "Pause" : "Resume" // Explicit Label
+                    icon: engine.currentState==="running" ? "pause" : "play_arrow"
+                    color: accentColor
+                    onClicked: engine.currentState==="running" ? engine.pause() : engine.start()
+                }
+
+                // Stop
+                RoundButton {
+                    text: "Stop" // Explicit Label
+                    icon: "stop"
+                    color: accentColor
+                    onClicked: engine.stop()
+                }
+
+                // Skip Cycle
+                RoundButton {
+                    text: "Skip" // Explicit Label
+                    icon: "fast_forward"
+                    color: accentColor
+                    onClicked: engine.skip()
+                }
+
+                // Next Timer
+                RoundButton {
+                    text: "End" // Explicit Label
+                    icon: "skip_next"
+                    color: accentColor
+                    onClicked: engine.stop()
+                }
             }
         }
 

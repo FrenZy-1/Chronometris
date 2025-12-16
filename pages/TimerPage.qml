@@ -32,13 +32,19 @@ Flickable {
                 font.capitalization: Font.Capitalize
             }
 
-            // CONTROLS
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter; spacing: 15; Layout.topMargin: 10
-                RoundButton { icon: engine.currentState==="running"?"pause":"play_arrow"; color: accentColor; onClicked: engine.currentState==="running"?engine.pause():engine.start() }
-                RoundButton { icon: "stop"; color: accentColor; onClicked: engine.stop() }
-                RoundButton { icon: "fast_forward"; color: accentColor; onClicked: engine.skip() }
-                RoundButton { icon: "skip_next"; color: accentColor; onClicked: engine.stop() }
+
+                RoundButton {
+                    text: engine.currentState==="running" ? "Pause" : "Resume"
+                    icon: engine.currentState==="running" ? "pause" : "play_arrow"
+                    color: accentColor
+                    onClicked: engine.currentState==="running" ? engine.pause() : engine.start()
+                }
+
+                RoundButton { text: "Stop"; icon: "stop"; color: accentColor; onClicked: engine.stop() }
+                RoundButton { text: "Skip"; icon: "fast_forward"; color: accentColor; onClicked: engine.skip() }
+                RoundButton { text: "End"; icon: "skip_next"; color: accentColor; onClicked: engine.stop() }
             }
         }
 
