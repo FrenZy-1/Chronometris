@@ -18,6 +18,7 @@ Flickable {
             visible: engine.currentState !== "stopped"
             Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 20
 
+            Text { text: "Running Timer:"; font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             Text {
                 text: engine.currentType === "work" ? "WORK SESSION" :
                       (engine.currentType === "longBreak" ? "LONG BREAK" : "SHORT BREAK");

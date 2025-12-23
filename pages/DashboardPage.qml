@@ -23,7 +23,7 @@ Flickable {
 
         ColumnLayout {
             visible: engine.currentState !== "stopped"
-            Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter
+            Layout.fillWidth: true; Layout.topMargin: 20; Layout.alignment: Qt.AlignHCenter
             Text { text: "Running Timer:"; font.family: theme.mainFont; font.weight: theme.fontWeightBold; font.pixelSize: theme.fontSizeBody; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             Text { text: engine.currentType === "work" ? "WORK SESSION" : (engine.currentType === "longBreak" ? "LONG BREAK" : "SHORT BREAK"); font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
             Item { width: 260; height: 260; Layout.alignment: Qt.AlignHCenter
@@ -70,6 +70,47 @@ Flickable {
                     onClicked: engine.stop()
                 }
             }
+        }
+
+        // --- 2. UPCOMING / RINGING ALARM ---
+        ColumnLayout {
+            visible: engine.isAlarmSoon || engine.isRinging
+            Layout.fillWidth: true; Layout.alignment: Qt.AlignHCenter; Layout.topMargin: 30; spacing: 5
+
+            Text {
+                text: engine.isRinging ? "ALARM RINGING!" : "Upcoming Alarm:"
+                font.family: theme.mainFont;
+                font.pixelSize: engine.isRinging ? theme.fontSizeH2 : theme.fontSizeSmall
+                font.weight: theme.fontWeightBold;
+                color: engine.isRinging ? "#FF6B6B" : theme.textPrimary
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Text { text: engine.nextAlarmName; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightExtraBold; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+            Text { text: engine.nextAlarmTime; font.family: theme.mainFont; font.pixelSize: theme.fontSizeH2; font.weight: theme.fontWeightNormal; color: theme.textPrimary; Layout.alignment: Qt.AlignHCenter }
+
+            // BUTTONS
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter; spacing: 30; Layout.topMargin: 10
+
+                // SNOOZE
+                RoundButton {
+                    icon: "hourglass_bottom";
+                    text: "Snooze";
+                    color: accentColor;
+                    onClicked: engine.snoozeAlarm()
+                }
+
+                // TURN OFF
+                RoundButton {
+                    icon: "close";
+                    text: "Turn Off";
+                    color: "#FF6B6B";
+                    iconColor: "white"
+                    onClicked: engine.stopRinging()
+                }
+            }
+            Rectangle { Layout.fillWidth: true; height: 1; color: theme.borderColor; opacity: 0.3; Layout.margins: 20; Layout.topMargin: 15 }
         }
 
         // --- 2. STATS ---

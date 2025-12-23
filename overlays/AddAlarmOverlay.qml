@@ -67,20 +67,20 @@ Popup {
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Alarm Name"; color: "white"; font.pixelSize: 12; font.bold: true }
-                        TextField { id: aName; Layout.fillWidth: true; placeholderText: "Enter name..."; font.pixelSize: theme.fontSizeBody; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                        TextField { id: aName; Layout.fillWidth: true; background: Rectangle{radius:5;color:"#E9E9E9"} }
                     }
 
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Description"; color: "white"; font.pixelSize: 12; font.bold: true }
-                        TextField { id: aDesc; Layout.fillWidth: true; placeholderText: "Enter description..."; font.pixelSize: theme.fontSizeBody; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                        TextField { id: aDesc; Layout.fillWidth: true; background: Rectangle{radius:5;color:"#E9E9E9"} }
                     }
 
                     ColumnLayout {
                         spacing: 2; Layout.fillWidth: true
                         Text { text: "Ringtone"; color: "white"; font.pixelSize: 12; font.bold: true }
                         RowLayout {
-                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; placeholderText: "None selected"; font.pixelSize: theme.fontSizeSmall; background: Rectangle{radius:5;color:"#E9E9E9"} }
+                            TextField { Layout.fillWidth: true; readOnly: true; text: selectedRingtone; background: Rectangle{radius:5;color:"#E9E9E9"} }
                             Button { text: "📂"; onClicked: fileDialog.open() }
                         }
                     }
