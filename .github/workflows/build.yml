@@ -146,6 +146,35 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
+      - name: Generate Android deployment files
+        run: |
+          "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
+            --input build/android-Chronometris-deployment-settings.json \
+            --output build/android-build \
+            --android-platform android-31 \
+            --aux-mode
+
+      - name: Inspect Android deployment files
+        run: |
+          echo "===== build.gradle lines 30-45 ====="
+          nl -ba build/android-build/build.gradle | sed -n '30,45p'
+
+          echo
+          echo "===== gradle.properties ====="
+          if [ -f build/android-build/gradle.properties ]; then
+            cat build/android-build/gradle.properties
+          else
+            echo "gradle.properties does not exist"
+          fi
+
+          echo
+          echo "===== Android SDK build-tools ====="
+          ls -la "$ANDROID_SDK_ROOT/build-tools"
+
+          echo
+          echo "===== Android SDK platforms ====="
+          ls -la "$ANDROID_SDK_ROOT/platforms"
+
       - name: Build APK
         run: |
           "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
@@ -154,12 +183,6 @@ jobs:
             --android-platform android-31 \
             --release \
             --verbose
-
-          echo "===== Generated gradle.properties ====="
-          cat build/android-build/gradle.properties || true
-
-          echo "===== Generated build.gradle ====="
-          sed -n '30,45p' build/android-build/build.gradle || true
 
       - uses: actions/upload-artifact@v4
         with:
