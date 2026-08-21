@@ -29,7 +29,6 @@ qt_add_qml_module(appChronometris
         components/ColoredIcon.qml
         components/TimePicker.qml
         components/ColoredIcon.qml
-        components/TimePIcker.qml
         components/DatePicker.qml
 
         pages/AlarmsPage.qml
