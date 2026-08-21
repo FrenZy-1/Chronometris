@@ -5,6 +5,9 @@ on:
     tags: ['v*']
   workflow_dispatch:   # lets you click "Run workflow" in the GitHub UI anytime
 
+permissions:
+  contents: read
+
 jobs:
 
   # ───────────────────────── WINDOWS ─────────────────────────
