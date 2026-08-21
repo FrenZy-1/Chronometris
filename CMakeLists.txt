@@ -17,6 +17,7 @@ find_package(Qt6 6.2 COMPONENTS
 qt_standard_project_setup()
 
 qt_add_executable(appChronometris
+    MACOSX_BUNDLE
     main.cpp
     src/DatabaseManager.cpp
     src/DatabaseManager.h
@@ -91,6 +92,7 @@ include(GNUInstallDirs)
 
 install(TARGETS appChronometris
     BUNDLE DESTINATION .
+    LIBRARY DESTINATION .
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
