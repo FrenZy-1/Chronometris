@@ -3,7 +3,7 @@ name: Build
 on:
   push:
     tags: ['v*']
-  workflow_dispatch:   # lets you click "Run workflow" in the GitHub UI anytime
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -24,6 +24,7 @@ jobs:
           target: 'desktop'
           arch: 'win64_msvc2019_64'
           modules: 'qtmultimedia'
+          cache: true   # caches Qt download, saves ~5 min on reruns
 
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -35,7 +36,9 @@ jobs:
         shell: cmd
         run: |
           mkdir deploy
-          copy build\Release\Chronometris.exe deploy\
+          # CMakeLists sets RUNTIME_OUTPUT_DIRECTORY to ${CMAKE_BINARY_DIR}/bin
+          # MSVC multi-config appends Release → build\bin\Release\
+          copy build\bin\Release\Chronometris.exe deploy\
           windeployqt --release --no-translations --qmldir . deploy\Chronometris.exe
           xcopy /E /I /Y assets deploy\assets
 
@@ -47,6 +50,7 @@ jobs:
   # ───────────────────────── macOS ─────────────────────────
   build-macos:
     runs-on: macos-13
+    timeout-minutes: 60   # kill it if the runner queues too long
     steps:
       - uses: actions/checkout@v4
 
@@ -57,6 +61,7 @@ jobs:
           host: 'mac'
           target: 'desktop'
           modules: 'qtmultimedia'
+          cache: true
 
       - name: Configure
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -64,10 +69,9 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Package .app + .dmg
-        run: |
-          macdeployqt build/Chronometris.app -qmldir=. -always-overwrite
-          macdeployqt build/Chronometris.app -dmg
+      - name: Package .dmg
+        # Single call with both flags — calling macdeployqt twice causes issues
+        run: macdeployqt build/Chronometris.app -qmldir=. -always-overwrite -dmg
 
       - uses: actions/upload-artifact@v4
         with:
@@ -81,21 +85,25 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5   # v4 is deprecated
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # Host Qt (build tools like moc, qmlimportscanner run on the host)
+      # Install host Qt FIRST and save QTDIR before the Android install overwrites it
       - name: Install host Qt
         uses: jurplel/install-qt-action@v3
         with:
           version: '6.4.2'
           host: 'linux'
           target: 'desktop'
-          dir: '$HOME/host'
+          dir: '/opt/Qt-host'
+          cache: true
 
-      # Target Qt (compiled for Android)
+      - name: Save host Qt path
+        # jurplel sets QTDIR for this install; capture it before the next install overwrites it
+        run: echo "QT_HOST_DIR=$QTDIR" >> $GITHUB_ENV
+
       - name: Install Qt for Android
         uses: jurplel/install-qt-action@v3
         with:
@@ -104,6 +112,7 @@ jobs:
           target: 'android'
           arch: 'android_arm64_v8a'
           modules: 'qtmultimedia'
+          cache: true
 
       - name: Setup Android NDK
         uses: nttld/setup-ndk@v1
@@ -112,25 +121,27 @@ jobs:
           ndk-version: r25c
           add-to-path: false
 
-      - name: Build
+      - name: Configure
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
             -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
             -DANDROID_ABI=arm64-v8a \
             -DANDROID_PLATFORM=android-23 \
-            -DQt6_DIR=$Qt6_DIR/lib/cmake/Qt6 \
-            -DQT_HOST_PATH=$HOME/host/Qt/6.4.2/gcc_64 \
+            -DCMAKE_PREFIX_PATH=$QTDIR \
+            -DQT_HOST_PATH=${{ env.QT_HOST_DIR }} \
             -DQT_ANDROID_BUILD_ALL_ABIS=OFF
-          cmake --build build --parallel
 
-      - name: Build APK via Gradle
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Build APK
         run: |
           cd build/android-build
           chmod +x gradlew
-          ./gradlew assembleRelease
+          ./gradlew assembleDebug   # Debug = no signing required; change to assembleRelease + signing config for distribution
 
       - uses: actions/upload-artifact@v4
         with:
           name: Chronometris-Android
-          path: build/android-build/build/outputs/apk/release/*.apk
+          path: build/android-build/build/outputs/apk/debug/*.apk
