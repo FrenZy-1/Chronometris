@@ -71,16 +71,17 @@ jobs:
 
       - name: Package .dmg
         # Single call with both flags — calling macdeployqt twice causes issues
-        run: macdeployqt build/Chronometris.app -qmldir=. -always-overwrite -dmg
+        run: macdeployqt build/bin/Chronometris.app -qmldir=. -always-overwrite -dmg
 
       - uses: actions/upload-artifact@v4
         with:
           name: Chronometris-macOS
-          path: build/Chronometris.dmg
+          path: build/bin/Chronometris.dmg
 
-    # ───────────────────────── ANDROID ─────────────────────────
+      # ───────────────────────── ANDROID ─────────────────────────
   build-android:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -89,6 +90,22 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android SDK components
+        run: |
+          sdkmanager "platform-tools" \
+                     "platforms;android-31" \
+                     "build-tools;31.0.0"
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r23b
+          add-to-path: false
 
       - name: Install host Qt
         uses: jurplel/install-qt-action@v3
@@ -109,24 +126,20 @@ jobs:
           modules: 'qtmultimedia'
           cache: true
 
-      - name: Setup Android NDK
-        uses: nttld/setup-ndk@v1
-        id: setup-ndk
-        with:
-          ndk-version: r25c
-          add-to-path: false
-
       - name: Configure
         run: |
           cmake -B build \
             -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            -DCMAKE_TOOLCHAIN_FILE="${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake" \
             -DANDROID_ABI=arm64-v8a \
-            -DANDROID_PLATFORM=android-23 \
-            -DCMAKE_PREFIX_PATH=$Qt6_DIR \
-            -DQT_HOST_PATH=/opt/Qt-host/Qt/6.4.2/gcc_64 \
+            -DANDROID_PLATFORM=android-31 \
+            -DANDROID_SDK_ROOT="$ANDROID_SDK_ROOT" \
+            -DANDROID_NDK_ROOT="${{ steps.setup-ndk.outputs.ndk-path }}" \
+            -DCMAKE_PREFIX_PATH="$Qt6_DIR" \
+            -DQT_HOST_PATH="/opt/Qt-host/Qt/6.4.2/gcc_64" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
-            -DQT_ANDROID_BUILD_ALL_ABIS=OFF
+            -DQT_ANDROID_BUILD_ALL_ABIS=OFF \
+            -DQT_ANDROID_SDK_BUILD_TOOLS_REVISION=31.0.0
 
       - name: Build
         run: cmake --build build --parallel
