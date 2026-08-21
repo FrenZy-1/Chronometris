@@ -146,53 +146,45 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Prepare Android package
+      - name: Prepare Android deployment
         run: |
-          rm -rf build/android-build
-
           "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
             --input build/android-Chronometris-deployment-settings.json \
             --output build/android-build \
             --android-platform android-31 \
-            --no-build
+            --aux-mode
 
-      - name: Fix generated Android build settings
+      - name: Inspect generated Android project
         run: |
-          echo "===== gradle.properties before ====="
-          cat build/android-build/gradle.properties
+          echo "===== Android project files ====="
+          find build/android-build -maxdepth 3 -type f | sort
 
-          # Force the build-tools revision because Qt 6.4.2 is
-          # generating an empty value on the GitHub runner.
-          if grep -q '^androidBuildToolsVersion=' build/android-build/gradle.properties; then
-            sed -i 's/^androidBuildToolsVersion=.*/androidBuildToolsVersion=31.0.0/' \
-              build/android-build/gradle.properties
-          else
-            echo 'androidBuildToolsVersion=31.0.0' >> \
-              build/android-build/gradle.properties
-          fi
-
-          # Also force the compile SDK used by the generated Gradle project.
-          if grep -q '^androidCompileSdkVersion=' build/android-build/gradle.properties; then
-            sed -i 's/^androidCompileSdkVersion=.*/androidCompileSdkVersion=31/' \
-              build/android-build/gradle.properties
-          else
-            echo 'androidCompileSdkVersion=31' >> \
-              build/android-build/gradle.properties
-          fi
-
-          echo "===== gradle.properties after ====="
-          cat build/android-build/gradle.properties
-
+          echo
           echo "===== build.gradle ====="
-          nl -ba build/android-build/build.gradle | sed -n '30,45p'
+          if [ -f build/android-build/build.gradle ]; then
+            nl -ba build/android-build/build.gradle | sed -n '30,45p'
+          else
+            echo "build.gradle was not generated"
+          fi
+
+          echo
+          echo "===== gradle.properties ====="
+          if [ -f build/android-build/gradle.properties ]; then
+            cat build/android-build/gradle.properties
+          else
+            echo "gradle.properties was not generated"
+          fi
 
       - name: Build APK
-        working-directory: build/android-build
         run: |
-          chmod +x gradlew
-          ./gradlew assembleRelease --stacktrace --no-daemon
+          "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
+            --input build/android-Chronometris-deployment-settings.json \
+            --output build/android-build \
+            --android-platform android-31 \
+            --release \
+            --verbose
 
       - uses: actions/upload-artifact@v4
         with:
           name: Chronometris-Android
-          path: build/android-build/build/outputs/apk/**/*.apk
+          path: build/android-build/**/*.apk
