@@ -152,7 +152,14 @@ jobs:
             --input build/android-Chronometris-deployment-settings.json \
             --output build/android-build \
             --android-platform android-31 \
-            --release
+            --release \
+            --verbose
+
+          echo "===== Generated gradle.properties ====="
+          cat build/android-build/gradle.properties || true
+
+          echo "===== Generated build.gradle ====="
+          sed -n '30,45p' build/android-build/build.gradle || true
 
       - uses: actions/upload-artifact@v4
         with:
