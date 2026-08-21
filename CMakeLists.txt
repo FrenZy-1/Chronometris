@@ -1,34 +1,45 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.19)
 
-project(Chronometris VERSION 1.1 LANGUAGES CXX)
+project(appChronometris VERSION 1.0.0 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 6.2 COMPONENTS Quick Sql QuickControls2 QuickDialogs2 Multimedia REQUIRED)
+find_package(Qt6 6.2 COMPONENTS
+    Quick
+    Sql
+    QuickControls2
+    QuickDialogs2
+    Multimedia
+    REQUIRED
+)
 
 qt_standard_project_setup()
 
-# Add the C++ files
 qt_add_executable(appChronometris
     main.cpp
-    src/DatabaseManager.cpp src/DatabaseManager.h
-    src/TimerEngine.cpp src/TimerEngine.h
+    src/DatabaseManager.cpp
+    src/DatabaseManager.h
+    src/TimerEngine.cpp
+    src/TimerEngine.h
 )
 
-# Add the QML files and Assets
+set_target_properties(appChronometris PROPERTIES 
+    OUTPUT_NAME Chronometris
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
 qt_add_qml_module(appChronometris
     URI Chronometris
-    VERSION 1.0.0
+    VERSION 1.0
+
     QML_FILES
         Main.qml
-
         components/RoundButton.qml
         components/ThemeManager.qml
         components/TimerProgressCircle.qml
         components/ColoredIcon.qml
         components/TimePicker.qml
-        components/ColoredIcon.qml
         components/DatePicker.qml
 
         pages/AlarmsPage.qml
@@ -68,4 +79,25 @@ qt_add_qml_module(appChronometris
         assets/logo/Logo.png
 )
 
-target_link_libraries(appChronometris PRIVATE Qt6::Quick Qt6::Sql Qt6::QuickControls2 Qt6::QuickDialogs2 Qt6::Multimedia)
+target_link_libraries(appChronometris PRIVATE
+    Qt6::Quick
+    Qt6::Sql
+    Qt6::QuickControls2
+    Qt6::QuickDialogs2
+    Qt6::Multimedia
+)
+
+include(GNUInstallDirs)
+
+install(TARGETS appChronometris
+    BUNDLE DESTINATION .
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+qt_generate_deploy_qml_app_script(
+    TARGET appChronometris
+    FILENAME_VARIABLE deploy_script
+    NO_UNSUPPORTED_PLATFORM_ERROR
+)
+
+install(SCRIPT ${deploy_script})
