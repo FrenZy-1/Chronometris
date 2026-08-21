@@ -78,7 +78,7 @@ jobs:
           name: Chronometris-macOS
           path: build/bin/Chronometris.dmg
 
-         # ───────────────────────── ANDROID ─────────────────────────
+  # ───────────────────────── ANDROID ─────────────────────────
   build-android:
     runs-on: ubuntu-latest
 
@@ -140,7 +140,8 @@ jobs:
             -DQT_HOST_PATH="/opt/Qt-host/Qt/6.4.2/gcc_64" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DQT_ANDROID_BUILD_ALL_ABIS=OFF \
-            -DQT_ANDROID_SDK_BUILD_TOOLS_REVISION=31.0.0
+            -DQT_ANDROID_SDK_BUILD_TOOLS_REVISION=31.0.0 \
+            -DQT_NO_GLOBAL_APK_TARGET=TRUE
 
       - name: Build
         run: cmake --build build --parallel
