@@ -78,7 +78,7 @@ jobs:
           name: Chronometris-macOS
           path: build/bin/Chronometris.dmg
 
-       # ───────────────────────── ANDROID ─────────────────────────
+         # ───────────────────────── ANDROID ─────────────────────────
   build-android:
     runs-on: ubuntu-latest
 
@@ -93,11 +93,12 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       - name: Install Android SDK components
         run: |
-          sdkmanager "platform-tools" \
-                     "platforms;android-31" \
+          sdkmanager "platforms;android-31" \
                      "build-tools;31.0.0"
 
       - name: Setup Android NDK
@@ -139,17 +140,20 @@ jobs:
             -DQT_HOST_PATH="/opt/Qt-host/Qt/6.4.2/gcc_64" \
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DQT_ANDROID_BUILD_ALL_ABIS=OFF \
-            -DQT_ANDROID_COMPILE_SDK_VERSION=31 \
-            -DQT_ANDROID_TARGET_SDK_VERSION=31 \
             -DQT_ANDROID_SDK_BUILD_TOOLS_REVISION=31.0.0
 
       - name: Build
         run: cmake --build build --parallel
 
       - name: Build APK
-        run: cmake --build build --target apk
+        run: |
+          "$Qt6_DIR/bin/androiddeployqt" \
+            --input build/android-Chronometris-deployment-settings.json \
+            --output build/android-build \
+            --android-platform android-31 \
+            --release
 
       - uses: actions/upload-artifact@v4
         with:
           name: Chronometris-Android
-          path: build/android-build/build/outputs/apk/**/*.apk
+          path: build/android-build/**/*.apk
