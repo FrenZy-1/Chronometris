@@ -78,7 +78,7 @@ jobs:
           name: Chronometris-macOS
           path: build/bin/Chronometris.dmg
 
-    # ───────────────────────── ANDROID ─────────────────────────
+      # ───────────────────────── ANDROID ─────────────────────────
   build-android:
     runs-on: ubuntu-latest
 
@@ -127,6 +127,19 @@ jobs:
           modules: 'qtmultimedia'
           cache: true
 
+      - name: Check Qt Android template
+        run: |
+          echo "Qt Android installation:"
+          echo "$Qt6_DIR"
+
+          echo
+          echo "Checking Qt Android template:"
+          ls -la "$Qt6_DIR/src/android/templates"
+
+          echo
+          echo "Checking libs.xml:"
+          ls -la "$Qt6_DIR/src/android/templates/res/values/libs.xml"
+
       - name: Configure
         run: |
           cmake -B build \
@@ -141,39 +154,10 @@ jobs:
             -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=BOTH \
             -DQT_ANDROID_BUILD_ALL_ABIS=OFF \
             -DQT_ANDROID_SDK_BUILD_TOOLS_REVISION=31.0.0 \
-            -DQT_NO_GLOBAL_APK_TARGET=TRUE
+            -DQT_ANDROID_PACKAGE_SOURCE_DIR="$Qt6_DIR/src/android/templates"
 
       - name: Build
         run: cmake --build build --parallel
-
-      - name: Prepare Android deployment
-        run: |
-          "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
-            --input build/android-Chronometris-deployment-settings.json \
-            --output build/android-build \
-            --android-platform android-31 \
-            --aux-mode
-
-      - name: Inspect generated Android project
-        run: |
-          echo "===== Android project files ====="
-          find build/android-build -maxdepth 3 -type f | sort
-
-          echo
-          echo "===== build.gradle ====="
-          if [ -f build/android-build/build.gradle ]; then
-            nl -ba build/android-build/build.gradle | sed -n '30,45p'
-          else
-            echo "build.gradle was not generated"
-          fi
-
-          echo
-          echo "===== gradle.properties ====="
-          if [ -f build/android-build/gradle.properties ]; then
-            cat build/android-build/gradle.properties
-          else
-            echo "gradle.properties was not generated"
-          fi
 
       - name: Build APK
         run: |
@@ -183,6 +167,11 @@ jobs:
             --android-platform android-31 \
             --release \
             --verbose
+
+      - name: Show APK
+        run: |
+          echo "===== APK files ====="
+          find build/android-build -type f -name "*.apk" -print
 
       - uses: actions/upload-artifact@v4
         with:
