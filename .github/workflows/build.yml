@@ -78,7 +78,7 @@ jobs:
           name: Chronometris-macOS
           path: build/bin/Chronometris.dmg
 
-  # ───────────────────────── ANDROID ─────────────────────────
+    # ───────────────────────── ANDROID ─────────────────────────
   build-android:
     runs-on: ubuntu-latest
 
@@ -146,45 +146,53 @@ jobs:
       - name: Build
         run: cmake --build build --parallel
 
-      - name: Generate Android deployment files
+      - name: Prepare Android package
         run: |
+          rm -rf build/android-build
+
           "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
             --input build/android-Chronometris-deployment-settings.json \
             --output build/android-build \
             --android-platform android-31 \
-            --aux-mode
+            --no-build
 
-      - name: Inspect Android deployment files
+      - name: Fix generated Android build settings
         run: |
-          echo "===== build.gradle lines 30-45 ====="
-          nl -ba build/android-build/build.gradle | sed -n '30,45p'
+          echo "===== gradle.properties before ====="
+          cat build/android-build/gradle.properties
 
-          echo
-          echo "===== gradle.properties ====="
-          if [ -f build/android-build/gradle.properties ]; then
-            cat build/android-build/gradle.properties
+          # Force the build-tools revision because Qt 6.4.2 is
+          # generating an empty value on the GitHub runner.
+          if grep -q '^androidBuildToolsVersion=' build/android-build/gradle.properties; then
+            sed -i 's/^androidBuildToolsVersion=.*/androidBuildToolsVersion=31.0.0/' \
+              build/android-build/gradle.properties
           else
-            echo "gradle.properties does not exist"
+            echo 'androidBuildToolsVersion=31.0.0' >> \
+              build/android-build/gradle.properties
           fi
 
-          echo
-          echo "===== Android SDK build-tools ====="
-          ls -la "$ANDROID_SDK_ROOT/build-tools"
+          # Also force the compile SDK used by the generated Gradle project.
+          if grep -q '^androidCompileSdkVersion=' build/android-build/gradle.properties; then
+            sed -i 's/^androidCompileSdkVersion=.*/androidCompileSdkVersion=31/' \
+              build/android-build/gradle.properties
+          else
+            echo 'androidCompileSdkVersion=31' >> \
+              build/android-build/gradle.properties
+          fi
 
-          echo
-          echo "===== Android SDK platforms ====="
-          ls -la "$ANDROID_SDK_ROOT/platforms"
+          echo "===== gradle.properties after ====="
+          cat build/android-build/gradle.properties
+
+          echo "===== build.gradle ====="
+          nl -ba build/android-build/build.gradle | sed -n '30,45p'
 
       - name: Build APK
+        working-directory: build/android-build
         run: |
-          "/opt/Qt-host/Qt/6.4.2/gcc_64/bin/androiddeployqt" \
-            --input build/android-Chronometris-deployment-settings.json \
-            --output build/android-build \
-            --android-platform android-31 \
-            --release \
-            --verbose
+          chmod +x gradlew
+          ./gradlew assembleRelease --stacktrace --no-daemon
 
       - uses: actions/upload-artifact@v4
         with:
           name: Chronometris-Android
-          path: build/android-build/**/*.apk
+          path: build/android-build/build/outputs/apk/**/*.apk
