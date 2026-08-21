@@ -1,0 +1,132 @@
+name: Build
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:   # lets you click "Run workflow" in the GitHub UI anytime
+
+jobs:
+
+  # ───────────────────────── WINDOWS ─────────────────────────
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.4.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_msvc2019_64'
+          modules: 'qtmultimedia'
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Deploy with windeployqt
+        shell: cmd
+        run: |
+          mkdir deploy
+          copy build\Release\Chronometris.exe deploy\
+          windeployqt --release --no-translations --qmldir . deploy\Chronometris.exe
+          xcopy /E /I /Y assets deploy\assets
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chronometris-Windows
+          path: deploy/
+
+  # ───────────────────────── macOS ─────────────────────────
+  build-macos:
+    runs-on: macos-13
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.4.2'
+          host: 'mac'
+          target: 'desktop'
+          modules: 'qtmultimedia'
+
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        run: cmake --build build --parallel
+
+      - name: Package .app + .dmg
+        run: |
+          macdeployqt build/Chronometris.app -qmldir=. -always-overwrite
+          macdeployqt build/Chronometris.app -dmg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chronometris-macOS
+          path: build/Chronometris.dmg
+
+  # ───────────────────────── ANDROID ─────────────────────────
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      # Host Qt (build tools like moc, qmlimportscanner run on the host)
+      - name: Install host Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.4.2'
+          host: 'linux'
+          target: 'desktop'
+          dir: '$HOME/host'
+
+      # Target Qt (compiled for Android)
+      - name: Install Qt for Android
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: '6.4.2'
+          host: 'linux'
+          target: 'android'
+          arch: 'android_arm64_v8a'
+          modules: 'qtmultimedia'
+
+      - name: Setup Android NDK
+        uses: nttld/setup-ndk@v1
+        id: setup-ndk
+        with:
+          ndk-version: r25c
+          add-to-path: false
+
+      - name: Build
+        run: |
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=${{ steps.setup-ndk.outputs.ndk-path }}/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=arm64-v8a \
+            -DANDROID_PLATFORM=android-23 \
+            -DQT_HOST_PATH=$HOME/host/Qt/6.4.2/gcc_64 \
+            -DQT_ANDROID_BUILD_ALL_ABIS=OFF
+          cmake --build build --parallel
+
+      - name: Build APK via Gradle
+        run: |
+          cd build/android-build
+          chmod +x gradlew
+          ./gradlew assembleRelease
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Chronometris-Android
+          path: build/android-build/build/outputs/apk/release/*.apk
